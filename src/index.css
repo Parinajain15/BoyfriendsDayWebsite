@@ -16,6 +16,73 @@
   font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
+/* Warm Ivory / Creamy Paper Canvas for Home Page */
+.bg-warm-ivory-stationery {
+  background-color: #FFF8EF;
+}
+
+@keyframes subtlePulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.015);
+  }
+}
+
+@keyframes gentleSway {
+  0%, 100% {
+    transform: rotate(-1.5deg);
+  }
+  50% {
+    transform: rotate(1.5deg);
+  }
+}
+
+.animate-subtle-pulse {
+  animation: subtlePulse 4s ease-in-out infinite;
+}
+
+.animate-gentle-sway {
+  animation: gentleSway 5s ease-in-out infinite;
+}
+
+@keyframes floatPetal {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(5deg);
+  }
+}
+
+@keyframes driftSway {
+  0%, 100% {
+    transform: translateX(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateX(6px) rotate(-4deg);
+  }
+}
+
+.animate-float-petal {
+  animation: floatPetal 5s ease-in-out infinite;
+}
+
+.animate-drift-sway {
+  animation: driftSway 6s ease-in-out infinite;
+}
+
+/* Warm Cream / Pale Blush Canvas for Opened Romantic Gift Home Page */
+.bg-gift-cream-canvas {
+  background-color: #FFFDF9;
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(255, 228, 230, 0.55) 0px, transparent 55%),
+    radial-gradient(at 100% 100%, rgba(254, 240, 199, 0.45) 0px, transparent 55%),
+    radial-gradient(rgba(244, 63, 94, 0.12) 1.2px, transparent 1.2px);
+  background-size: 100% 100%, 100% 100%, 28px 28px;
+}
+
 /* Baby Blue Scrapbook Canvas - Brighter Main Background #BFE8FF */
 .bg-scrapbook-canvas {
   background-color: #BFE8FF;

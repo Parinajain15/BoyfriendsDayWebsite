@@ -19,6 +19,9 @@ const DEFAULT_SETTINGS: ScrapbookSettings = {
   themeColor: '#BFE8FF',
 };
 
+import { FINAL_MIXTAPE_TRACKS } from './utils/audioRegistry';
+import { audioEngine } from './utils/audio';
+
 const DEFAULT_MEMORIES: PolaroidMemory[] = [
   {
     id: 'mem-1',
@@ -142,103 +145,19 @@ const DEFAULT_MEMORIES: PolaroidMemory[] = [
   },
 ];
 
-const DEFAULT_TRACKS: SongTrack[] = [
-  {
-    id: 'track-1',
-    title: 'her',
-    artist: 'JVKE',
-    duration: '2:56',
-    lofiMelodyKey: 0,
-    note: 'The first song he dedicated to me.',
-    customAudioUrl: '/audio/her.mp3',
-  },
-  {
-    id: 'track-2',
-    title: 'Laakhau Hajarau',
-    artist: 'Yabesh Thapa',
-    duration: '3:45',
-    lofiMelodyKey: 1,
-    note: 'He explained the Nepali lyrics to me because I didn’t understand them. Then we slow-danced to it.',
-    customAudioUrl: '/audio/laakhau-hajarau.mp3',
-  },
-  {
-    id: 'track-3',
-    title: 'Señorita',
-    artist: 'Camila Cabello & Shawn Mendes',
-    duration: '3:11',
-    lofiMelodyKey: 2,
-    note: 'Our first dance together.',
-    customAudioUrl: '/audio/senorita.mp3',
-  },
-  {
-    id: 'track-4',
-    title: 'Dildara',
-    artist: 'Shafqat Amanat Ali',
-    duration: '4:11',
-    lofiMelodyKey: 0,
-    note: '',
-    customAudioUrl: '/audio/dildara.mp3',
-  },
-  {
-    id: 'track-5',
-    title: 'Itni Si Baat Hai — Female Part',
-    artist: 'Antara Mitra & Arijit Singh',
-    duration: '3:15',
-    lofiMelodyKey: 1,
-    note: '',
-    customAudioUrl: '/audio/itni-si-baat-hai.mp3',
-  },
-  {
-    id: 'track-6',
-    title: 'Mai Rang Sharbaton Ka',
-    artist: 'Atif Aslam & Chinmayi Sripaada',
-    duration: '2:40',
-    lofiMelodyKey: 2,
-    note: '',
-    customAudioUrl: '/audio/mai-rang-sharbaton-ka.mp3',
-  },
-  {
-    id: 'track-7',
-    title: 'Tera Rasta Chhodun Na',
-    artist: 'Amitabh Bhattacharya & Anusha Mani',
-    duration: '4:14',
-    lofiMelodyKey: 0,
-    note: '',
-    customAudioUrl: '/audio/tera-rasta-chhodun-na.mp3',
-  },
-  {
-    id: 'track-8',
-    title: 'Tum Se Hi',
-    artist: 'Mohit Chauhan',
-    duration: '5:23',
-    lofiMelodyKey: 1,
-    note: '',
-    customAudioUrl: '/audio/tum-se-hi.mp3',
-  },
-  {
-    id: 'track-9',
-    title: 'Ishq Sufiana',
-    artist: 'Kamal Khan',
-    duration: '5:27',
-    lofiMelodyKey: 2,
-    note: '',
-    customAudioUrl: '/audio/ishq-sufiana.mp3',
-  },
-  {
-    id: 'track-10',
-    title: 'Ishq Di Bajiyan',
-    artist: 'Diljit Dosanjh',
-    duration: '3:30',
-    lofiMelodyKey: 0,
-    note: 'He once told me he really likes this song.',
-    customAudioUrl: '/audio/ishq-di-bajiyan.mp3',
-  },
-];
+const DEFAULT_TRACKS: SongTrack[] = FINAL_MIXTAPE_TRACKS.map((t) => ({
+  id: t.id,
+  title: t.title,
+  artist: t.artist,
+  duration: t.duration,
+  note: t.note,
+  filename: t.filename,
+}));
 
 export default function App() {
   const [inScrapbook, setInScrapbook] = useState(false);
   const [currentSection, setCurrentSection] = useState<NavSection>('home');
-  const [isPlayingMusic, setIsPlayingMusic] = useState(false);
+  const [isHerPlaying, setIsHerPlaying] = useState(() => audioEngine.isHerPlaying());
   const [isCustomizeOpen, setIsCustomizeOpen] = useState(false);
 
   // Settings & Content persistence
@@ -262,11 +181,12 @@ export default function App() {
 
   const [tracks, setTracks] = useState<SongTrack[]>(() => {
     try {
-      const saved = localStorage.getItem('bf_gift_tracks_v6');
-      return saved ? JSON.parse(saved) : DEFAULT_TRACKS;
+      const saved = localStorage.getItem('bf_gift_tracks_final');
+      if (saved) return JSON.parse(saved);
     } catch {
-      return DEFAULT_TRACKS;
+      // fallback
     }
+    return DEFAULT_TRACKS;
   });
 
   useEffect(() => {
@@ -287,30 +207,23 @@ export default function App() {
 
   useEffect(() => {
     try {
-      localStorage.setItem('bf_gift_tracks_v6', JSON.stringify(tracks));
+      localStorage.setItem('bf_gift_tracks_final', JSON.stringify(tracks));
     } catch (e) {
       console.debug('Failed to save tracks', e);
     }
   }, [tracks]);
 
-  // Keep isPlayingMusic synced with the global audio engine
+  // Keep isHerPlaying strictly synced with AudioEngine's "her" state
   useEffect(() => {
-    const unsubscribe = lofiPlayer.subscribe((playing) => {
-      setIsPlayingMusic(playing);
+    const unsubscribe = audioEngine.subscribe(() => {
+      setIsHerPlaying(audioEngine.isHerPlaying());
     });
     return unsubscribe;
   }, []);
 
-  // Audio Toggle for "her" — JVKE
-  const toggleMusic = () => {
-    if (isPlayingMusic) {
-      lofiPlayer.pause();
-      setIsPlayingMusic(false);
-    } else {
-      lofiPlayer.start('/audio/her.mp3').then((started) => {
-        setIsPlayingMusic(started);
-      });
-    }
+  // Dedicated independent Toggle for Navbar "her" — JVKE
+  const handleToggleHer = () => {
+    audioEngine.toggleHer();
   };
 
   const handleAddMemory = (newMemory: PolaroidMemory) => {
@@ -351,8 +264,8 @@ export default function App() {
         onEnter={() => setInScrapbook(true)}
         boyfriendName={settings.boyfriendName}
         senderName={settings.senderName}
-        isPlayingMusic={isPlayingMusic}
-        toggleMusic={toggleMusic}
+        isPlayingMusic={isHerPlaying}
+        toggleMusic={handleToggleHer}
       />
     );
   }
@@ -376,10 +289,10 @@ export default function App() {
     nextIconColor: string;
   }> = {
     home: {
-      container: 'bg-[#BFE8FF] bg-scrapbook-canvas text-[#20304A]',
-      footer: 'border-t border-[#93D5FD] bg-white/90 text-[#20304A]',
-      transitionBtn: 'bg-white/95 hover:bg-white border-[#93D5FD] hover:border-blue-400 text-[#20304A]',
-      nextIconColor: 'text-blue-600',
+      container: 'bg-[#FFF8EF] bg-warm-ivory-stationery text-[#2B211E] selection:bg-[#F6D66A] selection:text-[#2B211E]',
+      footer: 'border-t border-[#E94B45]/20 bg-[#FFF8EF] text-[#2B211E]',
+      transitionBtn: 'bg-[#FFFDF7] hover:bg-[#FFF8EF] border-[#E94B45] hover:border-[#2B211E] text-[#2B211E] shadow-sm',
+      nextIconColor: 'text-[#E94B45]',
     },
     memories: {
       container: 'bg-[#CCE8FA] bg-scrapbook-canvas text-[#20304A]',
@@ -415,8 +328,8 @@ export default function App() {
       <Navbar
         currentSection={currentSection}
         onSelectSection={(sec) => navigateTo(sec)}
-        isPlayingMusic={isPlayingMusic}
-        toggleMusic={toggleMusic}
+        isPlayingMusic={isHerPlaying}
+        toggleMusic={handleToggleHer}
         onOpenCustomize={() => setIsCustomizeOpen(true)}
         onReturnToIntro={() => setInScrapbook(false)}
         boyfriendName={settings.boyfriendName}
@@ -485,18 +398,18 @@ export default function App() {
       {/* Scrapbook Footer */}
       <footer className={`border-t backdrop-blur-xs py-8 px-4 text-center transition-colors duration-200 ${currentTheme.footer}`}>
         <div className="max-w-md mx-auto space-y-2.5">
-          <div className="flex items-center justify-center gap-2 text-rose-500">
-            <Heart className="w-4 h-4 fill-rose-500" />
-            <span className="font-handwriting text-2xl sm:text-3xl text-[#20304A] font-bold">
+          <div className="flex items-center justify-center gap-2">
+            <Heart className={`w-4 h-4 ${currentSection === 'home' ? 'fill-[#E94B45] text-[#E94B45]' : 'fill-rose-500 text-rose-500'}`} />
+            <span className={`font-handwriting text-2xl sm:text-3xl font-bold ${currentSection === 'home' ? 'text-[#2B211E]' : 'text-[#20304A]'}`}>
               Happy Boyfriend's Day, Abhi ♡
             </span>
           </div>
 
-          <div className="flex items-center justify-center gap-3 text-xs text-[#20304A]/70 font-sans font-bold pt-1">
+          <div className={`flex items-center justify-center gap-3 text-xs font-sans font-bold pt-1 ${currentSection === 'home' ? 'text-[#2B211E]/80' : 'text-[#20304A]/70'}`}>
             <button
               type="button"
               onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-              className="hover:text-blue-700 underline cursor-pointer"
+              className={`underline cursor-pointer ${currentSection === 'home' ? 'hover:text-[#E94B45]' : 'hover:text-blue-700'}`}
             >
               Back to Top ↑
             </button>
@@ -504,7 +417,7 @@ export default function App() {
             <button
               type="button"
               onClick={() => setInScrapbook(false)}
-              className="hover:text-rose-600 underline cursor-pointer"
+              className={`underline cursor-pointer ${currentSection === 'home' ? 'hover:text-[#E94B45]' : 'hover:text-rose-600'}`}
             >
               Envelope View 💌
             </button>
@@ -512,7 +425,7 @@ export default function App() {
             <button
               type="button"
               onClick={() => setIsCustomizeOpen(true)}
-              className="hover:text-[#20304A] underline cursor-pointer"
+              className={`underline cursor-pointer ${currentSection === 'home' ? 'hover:text-[#A9D8EA]' : 'hover:text-[#20304A]'}`}
             >
               Settings ⚙️
             </button>

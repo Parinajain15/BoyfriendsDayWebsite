@@ -1,21 +1,39 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { SongTrack } from '../types/scrapbook';
-import { lofiPlayer, playCassetteClick, playPopSound } from '../utils/audio';
-import { Play, Pause, SkipBack, SkipForward, Heart, Plus, Disc, Volume2 } from 'lucide-react';
+import { audioEngine, playCassetteClick, playPopSound } from '../utils/audio';
+import { MixtapeTrack, FINAL_MIXTAPE_TRACKS } from '../utils/audioRegistry';
+import { Play, Pause, SkipBack, SkipForward, Plus, Disc, Volume2, VolumeX } from 'lucide-react';
 
 interface MusicPlayerProps {
-  tracks: SongTrack[];
+  tracks?: SongTrack[];
   onAddCustomTrack?: (track: SongTrack) => void;
   boyfriendName: string;
 }
 
 export const MusicPlayer: React.FC<MusicPlayerProps> = ({
-  tracks,
+  tracks: propTracks,
   onAddCustomTrack,
-  boyfriendName,
 }) => {
+  // Authoritative 10 final mixtape tracks + any user-added custom tracks
+  const customTracks: MixtapeTrack[] = (propTracks || [])
+    .filter((t) => !FINAL_MIXTAPE_TRACKS.some((f) => f.id === t.id || f.title.toLowerCase() === t.title.toLowerCase()))
+    .map((t) => ({
+      id: t.id,
+      title: t.title,
+      artist: t.artist,
+      filename: t.filename || `${t.title}.mp3`,
+      duration: t.duration,
+      note: t.note,
+    }));
+
+  const tracks: MixtapeTrack[] = [...FINAL_MIXTAPE_TRACKS, ...customTracks];
+
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [volume, setVolume] = useState(() => audioEngine.getVolume());
+  const [isMuted, setIsMuted] = useState(() => audioEngine.getIsMuted());
   const [audioNotice, setAudioNotice] = useState<string | null>(null);
   const [isAddingSong, setIsAddingSong] = useState(false);
   const [newTitle, setNewTitle] = useState('');
@@ -25,62 +43,51 @@ export const MusicPlayer: React.FC<MusicPlayerProps> = ({
 
   const currentTrack = tracks[currentTrackIndex] || tracks[0];
 
-  const getAudioUrlForTrack = (track: SongTrack): string => {
-    if (track.customAudioUrl) return track.customAudioUrl;
-    const title = track.title.toLowerCase();
-    if (title.includes('her')) return '/audio/her.mp3';
-    if (title.includes('laakhau')) return '/audio/laakhau-hajarau.mp3';
-    if (title.includes('seño') || title.includes('seno')) return '/audio/senorita.mp3';
-    if (title.includes('dildara')) return '/audio/dildara.mp3';
-    if (title.includes('itni si')) return '/audio/itni-si-baat-hai.mp3';
-    if (title.includes('rang sharbaton')) return '/audio/mai-rang-sharbaton-ka.mp3';
-    if (title.includes('tera rasta')) return '/audio/tera-rasta-chhodun-na.mp3';
-    if (title.includes('tum se hi')) return '/audio/tum-se-hi.mp3';
-    if (title.includes('ishq sufiana')) return '/audio/ishq-sufiana.mp3';
-    if (title.includes('bajiyan') || title.includes('baajiyan')) return '/audio/ishq-di-bajiyan.mp3';
-    return `/audio/${track.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.mp3`;
-  };
-
-  const playSongAtIndex = (index: number) => {
-    const track = tracks[index];
-    if (!track) return;
-    const url = getAudioUrlForTrack(track);
-    setAudioNotice(null);
-
-    lofiPlayer.start(url).then((started) => {
-      setIsPlaying(started);
-      if (!started) {
-        const filename = url.startsWith('/audio/') ? url.replace('/audio/', '') : url.replace('/', '');
-        setAudioNotice(`Audio file missing: please upload '${filename}' to /public/audio/ to play.`);
+  // Synchronize with the single AudioEngine instance
+  useEffect(() => {
+    const unsubscribeState = audioEngine.subscribe((playing, activeTrack) => {
+      setIsPlaying(playing);
+      if (activeTrack) {
+        const matchingIdx = tracks.findIndex((t) => t.id === activeTrack.id);
+        if (matchingIdx !== -1) {
+          setCurrentTrackIndex(matchingIdx);
+        }
       }
     });
-  };
 
-  // Synchronize playing state with global player
-  useEffect(() => {
-    const unsubscribe = lofiPlayer.subscribe((playing) => {
-      setIsPlaying(playing);
+    const unsubscribeTime = audioEngine.subscribeTime((curr, dur) => {
+      setCurrentTime(curr);
+      if (dur > 0 && !isNaN(dur)) {
+        setDuration(dur);
+      }
     });
-    return unsubscribe;
-  }, []);
 
-  // When song ends, auto-play next track
-  useEffect(() => {
-    const audioElem = lofiPlayer.getAudioElement();
-    if (audioElem) {
-      audioElem.onended = () => {
-        handleNext();
-      };
-    }
-  });
+    const unsubscribeNotice = audioEngine.subscribeNotice((notice) => {
+      setAudioNotice(notice);
+    });
+
+    return () => {
+      unsubscribeState();
+      unsubscribeTime();
+      unsubscribeNotice();
+    };
+  }, [tracks]);
+
+  const formatTime = (seconds: number) => {
+    if (isNaN(seconds) || seconds < 0) return '0:00';
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+  };
 
   const handleTogglePlay = () => {
     playCassetteClick();
     if (isPlaying) {
-      lofiPlayer.pause();
-      setIsPlaying(false);
+      audioEngine.pause();
     } else {
-      playSongAtIndex(currentTrackIndex);
+      const track = tracks[currentTrackIndex] || tracks[0];
+      setAudioNotice(null);
+      audioEngine.playTrack(track);
     }
   };
 
@@ -88,8 +95,10 @@ export const MusicPlayer: React.FC<MusicPlayerProps> = ({
     playCassetteClick();
     const nextIndex = (currentTrackIndex + 1) % tracks.length;
     setCurrentTrackIndex(nextIndex);
-    if (isPlaying) {
-      playSongAtIndex(nextIndex);
+    const nextTrack = tracks[nextIndex];
+    if (nextTrack) {
+      setAudioNotice(null);
+      audioEngine.playTrack(nextTrack);
     }
   };
 
@@ -97,19 +106,53 @@ export const MusicPlayer: React.FC<MusicPlayerProps> = ({
     playCassetteClick();
     const prevIndex = (currentTrackIndex - 1 + tracks.length) % tracks.length;
     setCurrentTrackIndex(prevIndex);
-    if (isPlaying) {
-      playSongAtIndex(prevIndex);
+    const prevTrack = tracks[prevIndex];
+    if (prevTrack) {
+      setAudioNotice(null);
+      audioEngine.playTrack(prevTrack);
     }
   };
 
-  const handleSelectTrack = (index: number) => {
+  /**
+   * Independent track selection from the playlist.
+   * Directly resolves and plays this track without affecting the navbar.
+   */
+  const handleSelectTrack = (track: MixtapeTrack, index: number, e?: React.MouseEvent) => {
+    if (e) {
+      e.stopPropagation();
+    }
     playCassetteClick();
-    if (index === currentTrackIndex && isPlaying) {
-      lofiPlayer.pause();
-      setIsPlaying(false);
+    if (currentTrack?.id === track.id && isPlaying) {
+      audioEngine.pause();
     } else {
       setCurrentTrackIndex(index);
-      playSongAtIndex(index);
+      setAudioNotice(null);
+      audioEngine.playTrack(track).then((started) => {
+        if (!started) {
+          console.warn(`[Audio] Playback failed for: "${track.filename}"`);
+        }
+      });
+    }
+  };
+
+  const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const targetTime = parseFloat(e.target.value);
+    setCurrentTime(targetTime);
+    audioEngine.seek(targetTime);
+  };
+
+  const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newVol = parseFloat(e.target.value);
+    setVolume(newVol);
+    setIsMuted(newVol === 0);
+    audioEngine.setVolume(newVol);
+  };
+
+  const toggleMute = () => {
+    const newMuted = audioEngine.toggleMute();
+    setIsMuted(newMuted);
+    if (!newMuted) {
+      setVolume(audioEngine.getVolume());
     }
   };
 
@@ -126,6 +169,7 @@ export const MusicPlayer: React.FC<MusicPlayerProps> = ({
       lofiMelodyKey: tracks.length % 3,
       note: newNote.trim() || 'A song chosen just for us.',
       customAudioUrl: newUrl.trim() || undefined,
+      filename: newUrl.trim() ? newUrl.trim() : `${newTitle.trim()}.mp3`,
     };
 
     if (onAddCustomTrack) {
@@ -139,7 +183,7 @@ export const MusicPlayer: React.FC<MusicPlayerProps> = ({
   };
 
   return (
-    <section id="music" className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-14 space-y-8">
+    <section id="music" className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-14 space-y-8 select-none">
       {/* Header */}
       <div className="text-center space-y-1">
         <span className="inline-block px-3.5 py-1 bg-gradient-to-r from-pink-200 via-amber-200 via-emerald-200 via-sky-200 to-purple-200 border border-purple-300/80 rounded-full font-sans text-xs font-bold uppercase text-[#20304A] tracking-wider shadow-2xs">
@@ -164,7 +208,7 @@ export const MusicPlayer: React.FC<MusicPlayerProps> = ({
         {/* Vintage Baby Yellow Paper Label */}
         <div className="bg-[#FFF4B8] rounded-2xl border border-[#F2DE79] p-4 sm:p-5 relative shadow-inner">
           <div className="flex items-center justify-between text-[10px] font-mono text-[#24324A]/70 border-b border-[#F2DE79] pb-1 mb-2 font-semibold">
-            <span>SIDE A · VINTAGE LO-FI STEREO</span>
+            <span>SIDE A · VINTAGE STEREO</span>
             <span>ABHI & PARINA · 90 MIN</span>
           </div>
 
@@ -179,7 +223,7 @@ export const MusicPlayer: React.FC<MusicPlayerProps> = ({
             </div>
             <div className="text-right">
               <span className="inline-block px-2.5 py-0.5 bg-white text-[#24324A] rounded-full text-[10px] font-mono font-semibold border border-[#F2DE79]">
-                {currentTrack.duration}
+                {duration > 0 ? formatTime(duration) : currentTrack.duration}
               </span>
             </div>
           </div>
@@ -231,39 +275,86 @@ export const MusicPlayer: React.FC<MusicPlayerProps> = ({
               </div>
             </div>
           </div>
+
+          {/* Progress Bar & Scrubbing Slider */}
+          <div className="mt-3.5 space-y-1">
+            <div className="flex items-center justify-between text-[11px] font-mono text-[#24324A]/80 font-medium px-0.5">
+              <span>{formatTime(currentTime)}</span>
+              <span>{duration > 0 ? formatTime(duration) : currentTrack.duration}</span>
+            </div>
+            <input
+              type="range"
+              min={0}
+              max={duration || 100}
+              step={0.5}
+              value={currentTime}
+              onChange={handleSeek}
+              className="w-full h-1.5 bg-[#F2DE79] rounded-lg appearance-none cursor-pointer accent-[#24324A]"
+              title="Seek audio progress"
+            />
+          </div>
         </div>
 
-        {/* Physical Cassette Buttons */}
-        <div className="mt-6 flex items-center justify-center gap-4 sm:gap-6">
-          <button
-            type="button"
-            onClick={handlePrev}
-            className="w-12 h-10 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-stone-200 border border-slate-700 flex items-center justify-center shadow-md transition-all cursor-pointer"
-            title="Previous track"
-          >
-            <SkipBack className="w-5 h-5" />
-          </button>
+        {/* Physical Cassette Buttons & Volume Control */}
+        <div className="mt-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+          {/* Main Transport Buttons */}
+          <div className="flex items-center gap-4 sm:gap-6 mx-auto sm:mx-0">
+            <button
+              type="button"
+              onClick={handlePrev}
+              className="w-12 h-10 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-stone-200 border border-slate-700 flex items-center justify-center shadow-md transition-all cursor-pointer"
+              title="Previous track"
+            >
+              <SkipBack className="w-5 h-5" />
+            </button>
 
-          <button
-            type="button"
-            onClick={handleTogglePlay}
-            className="w-16 h-12 rounded-2xl bg-[#24324A] hover:bg-[#1A2538] active:scale-95 text-white flex items-center justify-center shadow-lg transition-all cursor-pointer border border-blue-400/30"
-            title={isPlaying ? 'Pause' : 'Play tape'}
-          >
-            {isPlaying ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6 translate-x-0.5" />}
-          </button>
+            <button
+              type="button"
+              onClick={handleTogglePlay}
+              className="w-16 h-12 rounded-2xl bg-[#24324A] hover:bg-[#1A2538] active:scale-95 text-white flex items-center justify-center shadow-lg transition-all cursor-pointer border border-blue-400/30"
+              title={isPlaying ? 'Pause' : 'Play tape'}
+            >
+              {isPlaying ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6 translate-x-0.5" />}
+            </button>
 
-          <button
-            type="button"
-            onClick={handleNext}
-            className="w-12 h-10 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-stone-200 border border-slate-700 flex items-center justify-center shadow-md transition-all cursor-pointer"
-            title="Next track"
-          >
-            <SkipForward className="w-5 h-5" />
-          </button>
+            <button
+              type="button"
+              onClick={handleNext}
+              className="w-12 h-10 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-stone-200 border border-slate-700 flex items-center justify-center shadow-md transition-all cursor-pointer"
+              title="Next track"
+            >
+              <SkipForward className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Volume Slider */}
+          <div className="flex items-center gap-2 bg-slate-800/80 px-3 py-1.5 rounded-xl border border-slate-700 text-stone-300">
+            <button
+              type="button"
+              onClick={toggleMute}
+              className="text-stone-400 hover:text-white transition-colors cursor-pointer"
+              title={isMuted ? 'Unmute' : 'Mute'}
+            >
+              {isMuted || volume === 0 ? (
+                <VolumeX className="w-4 h-4 text-rose-400" />
+              ) : (
+                <Volume2 className="w-4 h-4" />
+              )}
+            </button>
+            <input
+              type="range"
+              min={0}
+              max={1}
+              step={0.05}
+              value={isMuted ? 0 : volume}
+              onChange={handleVolumeChange}
+              className="w-20 h-1.5 bg-slate-600 rounded-lg appearance-none cursor-pointer accent-blue-400"
+              title="Adjust volume"
+            />
+          </div>
         </div>
 
-        {/* Playing Status Kicker */}
+        {/* Playing Status Notice */}
         <div className="mt-4 text-center">
           {audioNotice ? (
             <p className="text-xs font-mono text-amber-300 bg-amber-950/70 border border-amber-500/40 py-1.5 px-3 rounded-xl inline-block max-w-lg">
@@ -376,7 +467,7 @@ export const MusicPlayer: React.FC<MusicPlayerProps> = ({
               <button
                 key={track.id}
                 type="button"
-                onClick={() => handleSelectTrack(idx)}
+                onClick={() => handleSelectTrack(track, idx)}
                 className={`w-full flex items-center justify-between p-3.5 rounded-2xl text-left transition-all cursor-pointer border group ${
                   isSelected
                     ? 'bg-white border-2 border-purple-500 text-[#24324A] shadow-sm ring-2 ring-purple-300/40 font-semibold'
@@ -435,4 +526,3 @@ export const MusicPlayer: React.FC<MusicPlayerProps> = ({
     </section>
   );
 };
-

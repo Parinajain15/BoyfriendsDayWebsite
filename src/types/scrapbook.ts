@@ -65,9 +65,10 @@ export interface SongTrack {
   title: string;
   artist: string;
   duration: string;
-  lofiMelodyKey: number; // for Web Audio synthesizer
+  lofiMelodyKey?: number;
   note: string;
   customAudioUrl?: string;
+  filename?: string;
 }
 
 export interface QuizQuestion {

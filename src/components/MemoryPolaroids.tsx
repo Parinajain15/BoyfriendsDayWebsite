@@ -1,8 +1,21 @@
 import React, { useState } from 'react';
 import { PolaroidMemory } from '../types/scrapbook';
 import { playPopSound, playSparkleSound } from '../utils/audio';
-import { Plus, RotateCw, Sparkles, Image as ImageIcon, Trash2, Video, Play, Maximize2 } from 'lucide-react';
+import { Plus, RotateCw, Sparkles, Image as ImageIcon, Trash2, Video, Play, Maximize2, Camera } from 'lucide-react';
 import { SketchDoodleArt } from './Doodles';
+
+const isHeicFile = (url?: string): boolean => {
+  if (!url) return false;
+  const path = url.split('?')[0].toLowerCase();
+  return path.endsWith('.heic') || path.endsWith('.heif');
+};
+
+const getFileName = (url?: string): string => {
+  if (!url) return '';
+  const clean = url.split('?')[0];
+  const lastSegment = clean.substring(clean.lastIndexOf('/') + 1);
+  return decodeURIComponent(lastSegment);
+};
 
 interface MemoryPolaroidsProps {
   memories: PolaroidMemory[];
@@ -19,6 +32,7 @@ export const MemoryPolaroids: React.FC<MemoryPolaroidsProps> = ({
   const [flippedIds, setFlippedIds] = useState<Record<string, boolean>>({});
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeMediaPreview, setActiveMediaPreview] = useState<PolaroidMemory | null>(null);
+  const [brokenImageIds, setBrokenImageIds] = useState<Record<string, boolean>>({});
 
   // Form State
   const [newTitle, setNewTitle] = useState('');
@@ -215,12 +229,40 @@ export const MemoryPolaroids: React.FC<MemoryPolaroidsProps> = ({
                           className="w-full h-full object-cover"
                           controls
                         />
-                      ) : item.imageUrl ? (
+                      ) : isHeicFile(item.imageUrl) ? (
+                        <div className="w-full h-full flex flex-col items-center justify-center p-3 text-center bg-[#F8FAFC] text-[#24324A] select-none rounded-xl border border-stone-200/80">
+                          <div className="w-10 h-10 rounded-2xl bg-white shadow-2xs border border-stone-200 flex items-center justify-center mb-1.5">
+                            <Camera className="w-5 h-5 text-[#24324A]/70" />
+                          </div>
+                          <span className="inline-block px-2.5 py-0.5 bg-amber-100 text-amber-900 border border-amber-300 rounded-full font-mono text-[9px] font-bold uppercase tracking-wider mb-1">
+                            Apple .HEIC Photo
+                          </span>
+                          <span className="font-mono text-[11px] font-semibold text-[#24324A] max-w-[200px] truncate" title={getFileName(item.imageUrl)}>
+                            {getFileName(item.imageUrl)}
+                          </span>
+                          <p className="font-sans text-[10px] text-[#24324A]/70 mt-1 leading-snug max-w-[210px]">
+                            Unsupported by browser image rendering. Please upload a .JPG or .PNG version.
+                          </p>
+                        </div>
+                      ) : item.imageUrl && !brokenImageIds[item.id] ? (
                         <img
                           src={item.imageUrl}
                           alt={item.title}
                           className="w-full h-full object-cover"
+                          onError={() => {
+                            setBrokenImageIds((prev) => ({ ...prev, [item.id]: true }));
+                          }}
                         />
+                      ) : item.imageUrl && brokenImageIds[item.id] ? (
+                        <div className="w-full h-full flex flex-col items-center justify-center p-3 text-center bg-stone-50 text-[#24324A] rounded-xl border border-stone-200">
+                          <Camera className="w-6 h-6 text-stone-400 mb-1" />
+                          <span className="font-mono text-xs font-semibold text-stone-600">
+                            {getFileName(item.imageUrl)}
+                          </span>
+                          <span className="text-[10px] text-stone-400 mt-1">
+                            File missing from /public/photos/
+                          </span>
+                        </div>
                       ) : (
                         <div className="relative w-full h-full flex flex-col items-center justify-center p-4 text-center">
                           <SketchDoodleArt type={item.doodleType} />
@@ -317,6 +359,21 @@ export const MemoryPolaroids: React.FC<MemoryPolaroidsProps> = ({
                   autoPlay
                   className="max-h-[55vh] w-full rounded-xl"
                 />
+              ) : isHeicFile(activeMediaPreview.imageUrl) ? (
+                <div className="w-full py-12 px-6 flex flex-col items-center justify-center bg-[#F8FAFC] rounded-2xl text-center border border-stone-200">
+                  <div className="w-14 h-14 rounded-2xl bg-white shadow-xs border border-stone-200 flex items-center justify-center mb-3">
+                    <Camera className="w-7 h-7 text-[#24324A]/80" />
+                  </div>
+                  <span className="inline-block px-3 py-1 bg-amber-100 text-amber-900 border border-amber-300 rounded-full font-mono text-xs font-bold uppercase tracking-wider mb-2">
+                    Apple .HEIC File Detected
+                  </span>
+                  <span className="font-mono text-sm font-bold text-[#24324A]">
+                    {getFileName(activeMediaPreview.imageUrl)}
+                  </span>
+                  <p className="font-sans text-xs text-[#24324A]/70 mt-2 max-w-md">
+                    Standard web browsers cannot decode Apple .HEIC files natively inside &lt;img&gt; elements. To display this photo natively in Chrome and Safari, please upload the .JPG or .PNG version of this file.
+                  </p>
+                </div>
               ) : activeMediaPreview.imageUrl ? (
                 <img
                   src={activeMediaPreview.imageUrl}

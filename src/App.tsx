@@ -25,11 +25,12 @@ import { audioEngine } from './utils/audio';
 const DEFAULT_MEMORIES: PolaroidMemory[] = [
   {
     id: 'mem-1',
-    title: 'My Favourite Place',
+    title: 'Your Arms, My Favourite Place',
     date: 'Warm Hugs',
     caption: 'Whenever I have a bad day, all I want is your hug and to be in your arms.',
     noteOnBack:
       'Whenever I have a bad day, all I want is your hug and to be in your arms.',
+    imageUrl: '/photos/him%20kissing%20me%20on%20cheek.JPG',
     doodleType: 'cozy',
     rotation: -2,
   },
@@ -40,6 +41,7 @@ const DEFAULT_MEMORIES: PolaroidMemory[] = [
     caption: 'I want your jacket, your hoodie, basically all your clothes. You’re mine, so technically they’re mine too.',
     noteOnBack:
       'I want your jacket, your hoodie, basically all your clothes. You’re mine, so technically they’re mine too.',
+    imageUrl: '/photos/tshirt%20gift.JPG',
     doodleType: 'cinema',
     rotation: 2.2,
   },
@@ -50,6 +52,7 @@ const DEFAULT_MEMORIES: PolaroidMemory[] = [
     caption: 'You were the first person who offered me your hand to hold on a date. I’ll never forget how special that felt.',
     noteOnBack:
       'You were the first person who offered me your hand to hold on a date. I’ll never forget how special that felt.',
+    imageUrl: '/photos/hand%20holding.jpg',
     doodleType: 'hands',
     rotation: -1.6,
   },
@@ -60,6 +63,7 @@ const DEFAULT_MEMORIES: PolaroidMemory[] = [
     caption: 'Sleeping on each other’s shoulders will always be one of my favourite things. Your shoulder is my favourite place to sleep.',
     noteOnBack:
       'Sleeping on each other’s shoulders will always be one of my favourite things. Your shoulder is my favourite place to sleep.',
+    imageUrl: '/photos/him%20sleeping.JPG',
     doodleType: 'cozy',
     rotation: 1.5,
   },
@@ -70,6 +74,7 @@ const DEFAULT_MEMORIES: PolaroidMemory[] = [
     caption: 'Golden sand & crashing waves',
     noteOnBack:
       'Taking dozens of sweet pictures by the tide and having the time of our lives watching the waves crash at sunset.',
+    imageUrl: '/photos/beach%202.JPG',
     doodleType: 'hands',
     rotation: 2.5,
   },
@@ -80,6 +85,7 @@ const DEFAULT_MEMORIES: PolaroidMemory[] = [
     caption: 'You being obsessed with my pictures and snaps is honestly one of my favourite things.',
     noteOnBack:
       'You being obsessed with my pictures and snaps is honestly one of my favourite things.',
+    imageUrl: '/photos/mirror.jpg',
     doodleType: 'stargazing',
     rotation: -1.8,
   },
@@ -90,6 +96,7 @@ const DEFAULT_MEMORIES: PolaroidMemory[] = [
     caption: 'Here’s to more risky quickies and makeouts.',
     noteOnBack:
       'Here’s to more risky quickies and makeouts.',
+    imageUrl: '/photos/hug.jpg',
     doodleType: 'coffee',
     rotation: -2.4,
   },
@@ -100,6 +107,7 @@ const DEFAULT_MEMORIES: PolaroidMemory[] = [
     caption: 'Him seeing my butt as a bank loan… because he definitely got his interest.',
     noteOnBack:
       'Him seeing my butt as a bank loan… because he definitely got his interest.',
+    imageUrl: '/photos/noses.jpg',
     doodleType: 'coffee',
     rotation: 2.1,
   },
@@ -110,6 +118,7 @@ const DEFAULT_MEMORIES: PolaroidMemory[] = [
     caption: 'To twinning at every festival.',
     noteOnBack:
       'To twinning at every festival.',
+    imageUrl: '/photos/saree.jpg',
     doodleType: 'cozy',
     rotation: 1.6,
   },
@@ -172,8 +181,24 @@ export default function App() {
 
   const [memories, setMemories] = useState<PolaroidMemory[]>(() => {
     try {
-      const saved = localStorage.getItem('bf_gift_memories_v5');
-      return saved ? JSON.parse(saved) : DEFAULT_MEMORIES;
+      const saved = localStorage.getItem('bf_gift_memories_v6') || localStorage.getItem('bf_gift_memories_v5');
+      if (saved) {
+        const parsed: PolaroidMemory[] = JSON.parse(saved);
+        // Ensure default memories have their authentic imageUrl mapped even if previously cached
+        return parsed.map((m) => {
+          const defaultMatch = DEFAULT_MEMORIES.find((d) => d.id === m.id);
+          if (defaultMatch) {
+            return {
+              ...defaultMatch,
+              ...m,
+              title: defaultMatch.title,
+              imageUrl: defaultMatch.imageUrl || m.imageUrl,
+            };
+          }
+          return m;
+        });
+      }
+      return DEFAULT_MEMORIES;
     } catch {
       return DEFAULT_MEMORIES;
     }
@@ -199,7 +224,7 @@ export default function App() {
 
   useEffect(() => {
     try {
-      localStorage.setItem('bf_gift_memories_v5', JSON.stringify(memories));
+      localStorage.setItem('bf_gift_memories_v6', JSON.stringify(memories));
     } catch (e) {
       console.debug('Failed to save memories', e);
     }

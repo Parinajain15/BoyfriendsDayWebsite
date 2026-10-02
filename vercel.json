@@ -7,6 +7,10 @@
       "destination": "/audio/:path*"
     },
     {
+      "source": "/photos/:path*",
+      "destination": "/photos/:path*"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

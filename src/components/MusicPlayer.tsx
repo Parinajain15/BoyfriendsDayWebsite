@@ -142,8 +142,8 @@ export const MusicPlayer: React.FC<MusicPlayerProps> = ({
     <section id="music" className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-14 space-y-8">
       {/* Header */}
       <div className="text-center space-y-1">
-        <span className="inline-block px-3 py-1 bg-[#C9B5FF] border border-[#C9B5FF] rounded-full font-sans text-xs font-bold uppercase text-[#20304A] tracking-wider shadow-2xs">
-          Mixtape For Abhi
+        <span className="inline-block px-3.5 py-1 bg-gradient-to-r from-pink-200 via-amber-200 via-emerald-200 via-sky-200 to-purple-200 border border-purple-300/80 rounded-full font-sans text-xs font-bold uppercase text-[#20304A] tracking-wider shadow-2xs">
+          Mixtape For Abhi 🌈
         </span>
         <h2 className="font-serif text-3xl sm:text-4xl text-[#20304A] font-bold tracking-tight">
           THE SOUNDTRACK OF US 📼
@@ -282,17 +282,17 @@ export const MusicPlayer: React.FC<MusicPlayerProps> = ({
         </div>
       </div>
 
-      {/* Playlist Tracklist */}
-      <div className="max-w-2xl mx-auto bg-white rounded-3xl border border-[#CCE5F8] p-5 sm:p-6 shadow-2xs">
-        <div className="flex items-center justify-between mb-4">
+      {/* Playlist Tracklist - Light Rainbow Handmade Aesthetic */}
+      <div className="max-w-2xl mx-auto bg-gradient-to-br from-[#FFF0F5]/90 via-[#FFFBEB]/85 via-[#F0FDF4]/85 via-[#F0F9FF]/90 to-[#FAF5FF]/90 rounded-3xl border-2 border-purple-200/80 p-5 sm:p-7 shadow-[0_16px_40px_rgba(192,132,252,0.12)]">
+        <div className="flex items-center justify-between mb-4 pb-3 border-b border-purple-200/50">
           <h3 className="font-serif text-xl font-bold text-[#24324A] flex items-center gap-2">
-            <Disc className="w-5 h-5 text-blue-500" />
+            <Disc className="w-5 h-5 text-purple-600" />
             <span>Our {tracks.length} Signature Songs</span>
           </h3>
           <button
             type="button"
             onClick={() => setIsAddingSong(!isAddingSong)}
-            className="px-3.5 py-1.5 bg-[#EAF6FF] hover:bg-[#CCE5F8] text-[#24324A] border border-[#CCE5F8] rounded-xl text-xs font-sans font-medium flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
+            className="px-3.5 py-1.5 bg-white/90 hover:bg-white text-[#24324A] border border-purple-200 rounded-xl text-xs font-sans font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Add Track</span>
@@ -303,7 +303,7 @@ export const MusicPlayer: React.FC<MusicPlayerProps> = ({
         {isAddingSong && (
           <form
             onSubmit={handleSaveCustomTrack}
-            className="mb-4 p-4 bg-[#EAF6FF]/60 border border-[#CCE5F8] rounded-2xl space-y-3 animate-in fade-in"
+            className="mb-4 p-4 bg-white/80 border border-purple-200 rounded-2xl space-y-3 animate-in fade-in"
           >
             <div className="text-xs font-sans font-semibold text-[#24324A]">
               Add another song to our mixtape:
@@ -314,7 +314,7 @@ export const MusicPlayer: React.FC<MusicPlayerProps> = ({
                 value={newTitle}
                 onChange={(e) => setNewTitle(e.target.value)}
                 placeholder="Song Title (e.g. Until I Found You)"
-                className="px-3 py-2 bg-white rounded-xl border border-[#CCE5F8] text-xs font-sans text-[#24324A]"
+                className="px-3 py-2 bg-white rounded-xl border border-purple-200 text-xs font-sans text-[#24324A]"
                 required
               />
               <input
@@ -322,7 +322,7 @@ export const MusicPlayer: React.FC<MusicPlayerProps> = ({
                 value={newArtist}
                 onChange={(e) => setNewArtist(e.target.value)}
                 placeholder="Artist name"
-                className="px-3 py-2 bg-white rounded-xl border border-[#CCE5F8] text-xs font-sans text-[#24324A]"
+                className="px-3 py-2 bg-white rounded-xl border border-purple-200 text-xs font-sans text-[#24324A]"
               />
             </div>
             <input
@@ -330,14 +330,14 @@ export const MusicPlayer: React.FC<MusicPlayerProps> = ({
               value={newNote}
               onChange={(e) => setNewNote(e.target.value)}
               placeholder="Why this song? (Your personal liner note)"
-              className="w-full px-3 py-2 bg-white rounded-xl border border-[#CCE5F8] text-xs font-sans text-[#24324A]"
+              className="w-full px-3 py-2 bg-white rounded-xl border border-purple-200 text-xs font-sans text-[#24324A]"
             />
             <input
               type="url"
               value={newUrl}
               onChange={(e) => setNewUrl(e.target.value)}
               placeholder="Audio File URL (optional .mp3 / audio stream link)"
-              className="w-full px-3 py-2 bg-white rounded-xl border border-[#CCE5F8] text-xs font-sans text-[#24324A]"
+              className="w-full px-3 py-2 bg-white rounded-xl border border-purple-200 text-xs font-sans text-[#24324A]"
             />
             <div className="flex items-center justify-end gap-2 pt-1">
               <button
@@ -357,11 +357,21 @@ export const MusicPlayer: React.FC<MusicPlayerProps> = ({
           </form>
         )}
 
-        {/* Tracks List */}
+        {/* Tracks List with light pastel rainbow tints */}
         <div className="space-y-2">
           {tracks.map((track, idx) => {
             const isSelected = idx === currentTrackIndex;
             const isCurrentPlaying = isSelected && isPlaying;
+            const rainbowTints = [
+              'bg-rose-50/80 border-rose-200/80 hover:bg-rose-100/70',
+              'bg-amber-50/80 border-amber-200/80 hover:bg-amber-100/70',
+              'bg-emerald-50/80 border-emerald-200/80 hover:bg-emerald-100/70',
+              'bg-sky-50/80 border-sky-200/80 hover:bg-sky-100/70',
+              'bg-purple-50/80 border-purple-200/80 hover:bg-purple-100/70',
+              'bg-pink-50/80 border-pink-200/80 hover:bg-pink-100/70',
+            ];
+            const tint = rainbowTints[idx % rainbowTints.length];
+
             return (
               <button
                 key={track.id}
@@ -369,8 +379,8 @@ export const MusicPlayer: React.FC<MusicPlayerProps> = ({
                 onClick={() => handleSelectTrack(idx)}
                 className={`w-full flex items-center justify-between p-3.5 rounded-2xl text-left transition-all cursor-pointer border group ${
                   isSelected
-                    ? 'bg-[#E9DEFF]/60 border-[#D0BDFF] text-[#24324A] shadow-2xs font-semibold'
-                    : 'hover:bg-[#EAF6FF]/60 border-transparent text-[#24324A]/80'
+                    ? 'bg-white border-2 border-purple-500 text-[#24324A] shadow-sm ring-2 ring-purple-300/40 font-semibold'
+                    : `${tint} text-[#24324A]/90`
                 }`}
               >
                 <div className="flex items-center gap-3">
@@ -380,8 +390,8 @@ export const MusicPlayer: React.FC<MusicPlayerProps> = ({
                       isCurrentPlaying
                         ? 'bg-[#24324A] text-white shadow-xs'
                         : isSelected
-                        ? 'bg-[#D0BDFF] text-[#24324A]'
-                        : 'bg-[#EAF6FF] text-[#24324A]/70 group-hover:bg-[#CCE5F8]'
+                        ? 'bg-purple-200 text-[#24324A]'
+                        : 'bg-white/80 text-[#24324A]/70 group-hover:bg-white'
                     }`}
                     title={isCurrentPlaying ? `Pause ${track.title}` : `Play ${track.title}`}
                   >
@@ -392,7 +402,7 @@ export const MusicPlayer: React.FC<MusicPlayerProps> = ({
                     )}
                   </div>
 
-                  <span className="font-mono text-xs text-[#24324A]/50 font-semibold w-5">
+                  <span className="font-mono text-xs text-[#24324A]/60 font-semibold w-5">
                     {String(idx + 1).padStart(2, '0')}
                   </span>
                   <div>
@@ -407,13 +417,13 @@ export const MusicPlayer: React.FC<MusicPlayerProps> = ({
 
                 <div className="flex items-center gap-3">
                   {isCurrentPlaying && (
-                    <span className="flex items-center gap-0.5 text-blue-600">
-                      <span className="w-1 h-3 bg-blue-600 rounded animate-pulse" />
-                      <span className="w-1 h-4 bg-blue-600 rounded animate-pulse delay-75" />
-                      <span className="w-1 h-2 bg-blue-600 rounded animate-pulse delay-150" />
+                    <span className="flex items-center gap-0.5 text-purple-600">
+                      <span className="w-1 h-3 bg-purple-600 rounded animate-pulse" />
+                      <span className="w-1 h-4 bg-purple-600 rounded animate-pulse delay-75" />
+                      <span className="w-1 h-2 bg-purple-600 rounded animate-pulse delay-150" />
                     </span>
                   )}
-                  <span className="font-mono text-xs text-[#24324A]/50">
+                  <span className="font-mono text-xs text-[#24324A]/60 font-medium">
                     {track.duration}
                   </span>
                 </div>

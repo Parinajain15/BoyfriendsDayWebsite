@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import confetti from 'canvas-confetti';
 import { playPopSound, playSparkleSound } from '../utils/audio';
-import { CheckCircle2, XCircle, RotateCcw } from 'lucide-react';
+import { CheckCircle2, XCircle, RotateCcw, Sparkles } from 'lucide-react';
 
 interface GamesSectionProps {
   boyfriendName?: string;
@@ -9,10 +9,10 @@ interface GamesSectionProps {
 }
 
 export const GamesSection: React.FC<GamesSectionProps> = () => {
-  // ONLY two allowed game sections:
+  // Exactly 2 allowed game sections:
   // 1. Trivia & Memories
-  // 2. Who Said It?
-  const [activeTab, setActiveTab] = useState<'trivia' | 'who-said-it'>('trivia');
+  // 2. Who’s More Likely To?
+  const [activeTab, setActiveTab] = useState<'trivia' | 'likely'>('trivia');
 
   // ========================================================
   // SECTION 1: TRIVIA & MEMORIES
@@ -23,31 +23,26 @@ export const GamesSection: React.FC<GamesSectionProps> = () => {
       question: 'How many fights in Darjeeling?',
       options: ['0', '1', '10', '50'],
       correct: 3,
-      explanation: '50 fights! A Darjeeling record, but made up with hugs and laughter every single time. 😂❤️',
     },
     {
       question: 'What song did we first dance to?',
       options: ['Señorita', 'Tum Se Hi', 'Dildara', 'Laakhau Hajarau'],
       correct: 0,
-      explanation: 'Señorita! First dance together salsa on the club dance floor. 💃🕺',
     },
     {
       question: 'What’s Parina’s biggest turn-off?',
       options: ['Being late', 'Loud chewing', 'Burping', 'Sweating'],
       correct: 0,
-      explanation: 'Being late! Punctuality is non-negotiable for your girl! ⏰😤',
     },
     {
       question: 'What’s Parina’s favourite ice cream flavour?',
       options: ['Choco Chips', 'Cookies & Cream', 'Mint Chocolate', 'All of the above'],
       correct: 3,
-      explanation: 'All of the above! Why choose just one when you can love them all? 🍨🍫',
     },
     {
       question: 'When will Abhinab stop smoking?',
       options: ['Right now', 'Tonight', 'Tomorrow', 'Never'],
       correct: 0,
-      explanation: 'Right now! Official girlfriend orders. No excuses, boyfriend! 🚭🤍',
     },
   ];
 
@@ -76,10 +71,10 @@ export const GamesSection: React.FC<GamesSectionProps> = () => {
       setTFinished(true);
       playSparkleSound();
       confetti({
-        particleCount: 30,
-        spread: 60,
+        particleCount: 35,
+        spread: 65,
         origin: { y: 0.65 },
-        colors: ['#FFE66D', '#FF9FC4', '#9FE8C1', '#C9B5FF'],
+        colors: ['#00E5FF', '#FF4D8D', '#FFE600', '#A855F7'],
         disableForReducedMotion: true,
       });
     }
@@ -93,53 +88,53 @@ export const GamesSection: React.FC<GamesSectionProps> = () => {
   };
 
   // ========================================================
-  // SECTION 2: WHO SAID IT?
-  // Personalized quotes, lines, habits, and things realistically said
+  // SECTION 2: WHO’S MORE LIKELY TO?
+  // Exactly 5 questions with requested updates & reversible selection
   // ========================================================
-  const whoSaidItQuotes = [
+  const likelyQuestions = [
     {
-      text: '"Look at that dog! Stop right now, we have to go pet it."',
-      author: 'Abhi',
-      detail: 'Non-negotiable protocol whenever any four-legged creature appears within a 50-meter radius. 🐶',
+      question: 'Who’s more likely to not watch the reels the other sends?',
+      options: ['Abhinab', 'Parina'],
+      correct: 'Abhinab',
+      isCheatQuestion: false,
     },
     {
-      text: '"Are you literally rage-baiting me right now on purpose?!"',
-      author: 'Parina',
-      detail: 'Asked at least twice every single week while Abhi stands there grinning with his dimple. 😤',
+      question: 'Who’s more likely to rage-bait the other?',
+      options: ['Abhinab', 'Parina'],
+      correct: 'Abhinab',
+      isCheatQuestion: false,
     },
     {
-      text: '"Let\'s get hot rolls, an ice-cold Red Bull, and blast some Nepali songs."',
-      author: 'Abhi',
-      detail: 'The undisputed culinary and musical holy grail for Abhi at any hour of the night. 🌯⚡',
+      question: 'Who’s more likely to say sorry first?',
+      options: ['Abhinab', 'Parina'],
+      correct: 'Parina',
+      isCheatQuestion: false,
     },
     {
-      text: '"Where is my pink Stanley cup and my pink sleeping mask?!"',
-      author: 'Parina',
-      detail: 'Daily pink-aesthetic inventory audit. He knows his girl well. 🎀',
+      question: 'Who’s more likely to cheat on the other?',
+      options: ['Abhinab', 'Parina'],
+      correct: 'NONE OF THEM',
+      isCheatQuestion: true,
     },
     {
-      text: '"Don\'t worry about those drunk guys, stay behind me."',
-      author: 'Abhi',
-      detail: 'The protective gentleman on the night they first met at the club. 🛡️',
-    },
-    {
-      text: '"I\'m stealing your hoodie, your fries, and all your warmth."',
-      author: 'Parina',
-      detail: 'Girlfriend tax is 100% legally binding and non-refundable. 🍟',
+      question: 'Who’s more likely to give the best surprises?',
+      options: ['Abhinab', 'Parina'],
+      correct: 'Parina',
+      isCheatQuestion: false,
     },
   ];
 
   const [wIndex, setWIndex] = useState(0);
-  const [wAnswer, setWAnswer] = useState<string | null>(null);
-  const [wScore, setWScore] = useState(0);
+  const [wCurrentChoice, setWCurrentChoice] = useState<string | null>(null);
+  const [wAnswers, setWAnswers] = useState<Record<number, string>>({});
   const [wFinished, setWFinished] = useState(false);
 
-  const handleWGuess = (guess: 'Abhi' | 'Parina') => {
-    if (wAnswer !== null) return;
-    setWAnswer(guess);
-    if (guess === whoSaidItQuotes[wIndex].author) {
+  // Both buttons remain clickable at ALL times, allowing toggling!
+  const handleWSelect = (choice: string) => {
+    setWCurrentChoice(choice);
+    setWAnswers((prev) => ({ ...prev, [wIndex]: choice }));
+    if (choice === likelyQuestions[wIndex].correct) {
       playSparkleSound();
-      setWScore((s) => s + 1);
     } else {
       playPopSound();
     }
@@ -147,17 +142,18 @@ export const GamesSection: React.FC<GamesSectionProps> = () => {
 
   const handleWNext = () => {
     playPopSound();
-    if (wIndex + 1 < whoSaidItQuotes.length) {
-      setWIndex((i) => i + 1);
-      setWAnswer(null);
+    if (wIndex + 1 < likelyQuestions.length) {
+      const nextIdx = wIndex + 1;
+      setWIndex(nextIdx);
+      setWCurrentChoice(wAnswers[nextIdx] || null);
     } else {
       setWFinished(true);
       playSparkleSound();
       confetti({
-        particleCount: 30,
-        spread: 55,
+        particleCount: 40,
+        spread: 70,
         origin: { y: 0.65 },
-        colors: ['#BFE8FF', '#9FE8C1', '#FF9FC4', '#FFE66D'],
+        colors: ['#FFE66D', '#FF9FC4', '#00E5FF', '#A855F7'],
         disableForReducedMotion: true,
       });
     }
@@ -165,31 +161,82 @@ export const GamesSection: React.FC<GamesSectionProps> = () => {
 
   const handleWReset = () => {
     setWIndex(0);
-    setWAnswer(null);
-    setWScore(0);
+    setWCurrentChoice(null);
+    setWAnswers({});
     setWFinished(false);
   };
 
+  // Calculate final score
+  const calculatedWScore = likelyQuestions.reduce((acc, q, idx) => {
+    return acc + (wAnswers[idx] && wAnswers[idx] === q.correct ? 1 : 0);
+  }, 0);
+
   return (
-    <section id="games" className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-14 space-y-8">
-      {/* Header */}
-      <div className="text-center space-y-1">
-        <span className="inline-block px-3 py-1 bg-[#FFE66D] border border-[#F2DE79] rounded-full font-sans text-xs font-semibold uppercase text-[#20304A] tracking-wider shadow-2xs">
-          Quick & Playful
-        </span>
-        <h2 className="font-serif text-3xl sm:text-4xl text-[#20304A] font-bold tracking-tight">
-          LITTLE GAMES & INTERACTIONS 🎮
+    <section id="games" className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-14 space-y-8 relative">
+      {/* Decorative Asymmetric Retro Arcade Doodles */}
+      <div className="absolute top-4 left-2 sm:left-6 opacity-35 pointer-events-none select-none hidden sm:block">
+        {/* Pixel Controller */}
+        <svg width="60" height="42" viewBox="0 0 60 42" fill="none">
+          <rect x="2" y="6" width="56" height="32" rx="10" fill="#1E2742" stroke="#00E5FF" strokeWidth="2" />
+          {/* D-Pad */}
+          <rect x="10" y="18" width="14" height="6" rx="2" fill="#00E5FF" />
+          <rect x="14" y="14" width="6" height="14" rx="2" fill="#00E5FF" />
+          {/* Buttons */}
+          <circle cx="42" cy="18" r="3.5" fill="#FF4D8D" />
+          <circle cx="48" cy="24" r="3.5" fill="#FFE600" />
+        </svg>
+      </div>
+
+      <div className="absolute top-2 right-4 sm:right-8 opacity-35 pointer-events-none select-none hidden sm:block">
+        {/* Pixel Joystick */}
+        <svg width="48" height="56" viewBox="0 0 48 56" fill="none">
+          <rect x="6" y="32" width="36" height="18" rx="5" fill="#1E2742" stroke="#A855F7" strokeWidth="2" />
+          <line x1="24" y1="32" x2="24" y2="16" stroke="#94A3B8" strokeWidth="4" strokeLinecap="round" />
+          <circle cx="24" cy="12" r="8" fill="#FF4D8D" stroke="#FFA3C5" strokeWidth="1.5" />
+          <circle cx="16" cy="40" r="2.5" fill="#FFE600" />
+          <circle cx="32" cy="40" r="2.5" fill="#00E5FF" />
+        </svg>
+      </div>
+
+      <div className="absolute bottom-10 left-3 opacity-30 pointer-events-none select-none hidden md:block">
+        {/* Pixel Dice */}
+        <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
+          <rect x="4" y="4" width="36" height="36" rx="8" fill="#1E2742" stroke="#FFE600" strokeWidth="2" />
+          <circle cx="14" cy="14" r="3" fill="#FFE600" />
+          <circle cx="22" cy="22" r="3" fill="#FFE600" />
+          <circle cx="30" cy="30" r="3" fill="#FFE600" />
+          <circle cx="14" cy="30" r="3" fill="#FFE600" />
+          <circle cx="30" cy="14" r="3" fill="#FFE600" />
+        </svg>
+      </div>
+
+      <div className="absolute bottom-12 right-6 opacity-30 pointer-events-none select-none hidden md:block">
+        {/* Pixel Hearts & Star */}
+        <div className="flex flex-col items-center gap-2">
+          <span className="text-[#FF4D8D] text-lg animate-pulse">♥</span>
+          <span className="text-[#00E5FF] text-xs font-mono font-bold">1P READY</span>
+        </div>
+      </div>
+
+      {/* Header - Arcade Game Night Aesthetic */}
+      <div className="text-center space-y-2">
+        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-[#1B2236] border border-[#00E5FF]/40 rounded-full font-mono text-[11px] font-bold uppercase text-[#00E5FF] tracking-wider shadow-[0_0_15px_rgba(0,229,255,0.2)]">
+          <span className="w-2 h-2 rounded-full bg-[#00E5FF] animate-ping" />
+          <span>GAME NIGHT ARCADE · 2-PLAYER MODE</span>
+        </div>
+        <h2 className="font-serif text-3xl sm:text-4xl text-white font-bold tracking-tight drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)]">
+          LITTLE GAMES & INTERACTIONS 🕹️
         </h2>
-        <p className="font-handwriting text-xl text-[#20304A]/80">
+        <p className="font-handwriting text-xl text-stone-300">
           Two fun mini-games to test your memory and how well you know each other.
         </p>
       </div>
 
-      {/* Game Selector Tabs - ONLY 2 TABS */}
-      <div className="flex items-center justify-center gap-2 max-w-md mx-auto bg-white/80 p-1.5 rounded-2xl border border-[#93D5FD] shadow-2xs">
+      {/* Game Selector Tabs - Styled as Retro Arcade Switchers */}
+      <div className="flex items-center justify-center gap-2 max-w-md mx-auto bg-[#161B2E] p-1.5 rounded-2xl border-2 border-[#2E3B60] shadow-[0_10px_25px_rgba(0,0,0,0.4)]">
         {[
-          { id: 'trivia' as const, label: '1. Trivia & Memories' },
-          { id: 'who-said-it' as const, label: '2. Who Said It?' },
+          { id: 'trivia' as const, label: '1. Trivia & Memories', icon: '⚡' },
+          { id: 'likely' as const, label: '2. Who’s More Likely To?', icon: '🎯' },
         ].map((tab) => (
           <button
             key={tab.id}
@@ -198,46 +245,53 @@ export const GamesSection: React.FC<GamesSectionProps> = () => {
               playPopSound();
               setActiveTab(tab.id);
             }}
-            className={`flex-1 py-2 px-4 rounded-xl text-xs sm:text-sm font-sans font-semibold whitespace-nowrap transition-all cursor-pointer ${
+            className={`flex-1 py-2.5 px-4 rounded-xl text-xs sm:text-sm font-sans font-bold whitespace-nowrap transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
               activeTab === tab.id
-                ? 'bg-[#20304A] text-white shadow-xs'
-                : 'text-[#20304A]/70 hover:text-[#20304A] hover:bg-stone-50'
+                ? 'bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white shadow-[0_0_20px_rgba(168,85,247,0.4)] scale-[1.02]'
+                : 'text-stone-300 hover:text-white hover:bg-[#202742]'
             }`}
           >
-            {tab.label}
+            <span>{tab.icon}</span>
+            <span>{tab.label}</span>
           </button>
         ))}
       </div>
 
       {/* ======================================================== */}
       {/* SECTION 1: TRIVIA & MEMORIES                             */}
+      {/* Dark arcade console styling                              */}
       {/* ======================================================== */}
       {activeTab === 'trivia' && (
-        <div className="bg-white rounded-3xl border border-[#93D5FD] p-6 sm:p-8 shadow-2xs relative">
+        <div className="bg-[#151A2C] rounded-3xl border-2 border-[#2D395B] p-6 sm:p-9 shadow-[0_20px_50px_rgba(0,0,0,0.6)] relative overflow-hidden">
+          {/* Subtle neon glow lines */}
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 opacity-70" />
+
           {!tFinished ? (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between text-xs font-mono text-[#20304A]/60 pb-2 border-b border-[#BFE8FF]">
-                <span>QUESTION {tIndex + 1} OF {triviaQuestions.length}</span>
-                <span>SCORE: {tScore}</span>
+            <div className="space-y-5">
+              <div className="flex items-center justify-between text-xs font-mono text-cyan-300 pb-3 border-b border-[#283556]">
+                <span className="tracking-wider">STAGE {tIndex + 1} / {triviaQuestions.length}</span>
+                <span className="bg-[#1E2640] px-3 py-1 rounded-full border border-cyan-400/30 font-bold text-amber-300">
+                  SCORE: {tScore}
+                </span>
               </div>
 
-              <h3 className="font-serif text-xl sm:text-2xl font-bold text-[#20304A]">
+              <h3 className="font-serif text-xl sm:text-2xl font-bold text-white tracking-tight leading-snug">
                 {triviaQuestions[tIndex].question}
               </h3>
 
-              <div className="space-y-2.5 pt-2">
+              <div className="space-y-3 pt-2">
                 {triviaQuestions[tIndex].options.map((opt, idx) => {
                   const isChosen = tSelected === idx;
                   const isCorrect = idx === triviaQuestions[tIndex].correct;
 
-                  let style = 'bg-[#BFE8FF]/20 border-[#93D5FD] text-[#20304A] hover:bg-[#BFE8FF]/40';
+                  let style = 'bg-[#1C233B] border-[#2C385C] text-stone-100 hover:bg-[#242D4B] hover:border-cyan-400/50';
                   if (tSelected !== null) {
                     if (isCorrect) {
-                      style = 'bg-[#9FE8C1]/50 border-emerald-400 text-emerald-950 font-bold';
+                      style = 'bg-emerald-950/80 border-emerald-400 text-emerald-200 font-bold shadow-[0_0_15px_rgba(52,211,153,0.3)]';
                     } else if (isChosen) {
-                      style = 'bg-[#FF9FC4]/40 border-rose-400 text-rose-950';
+                      style = 'bg-rose-950/80 border-rose-400 text-rose-200 font-bold shadow-[0_0_15px_rgba(251,113,133,0.3)]';
                     } else {
-                      style = 'opacity-40 border-stone-200 text-stone-400';
+                      style = 'opacity-30 border-[#1E2640] text-stone-400';
                     }
                   }
 
@@ -247,47 +301,47 @@ export const GamesSection: React.FC<GamesSectionProps> = () => {
                       type="button"
                       disabled={tSelected !== null}
                       onClick={() => handleTriviaOption(idx)}
-                      className={`w-full p-3.5 rounded-2xl border text-left text-xs sm:text-sm font-sans font-medium transition-all flex items-center justify-between cursor-pointer ${style}`}
+                      className={`w-full p-4 rounded-2xl border text-left text-xs sm:text-sm font-sans font-medium transition-all flex items-center justify-between cursor-pointer ${style}`}
                     >
-                      <span>{opt}</span>
-                      {tSelected !== null && isCorrect && <CheckCircle2 className="w-4 h-4 text-emerald-600" />}
-                      {tSelected !== null && isChosen && !isCorrect && <XCircle className="w-4 h-4 text-rose-500" />}
+                      <span className="font-medium text-sm">{opt}</span>
+                      {tSelected !== null && isCorrect && <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />}
+                      {tSelected !== null && isChosen && !isCorrect && <XCircle className="w-5 h-5 text-rose-400 shrink-0" />}
                     </button>
                   );
                 })}
               </div>
 
               {tSelected !== null && (
-                <div className="pt-3 flex justify-end">
+                <div className="pt-4 flex justify-end">
                   <button
                     type="button"
                     onClick={handleTriviaNext}
-                    className="px-5 py-2 bg-[#20304A] hover:bg-[#152033] text-white rounded-xl text-xs font-sans font-semibold cursor-pointer shadow-xs transition-colors"
+                    className="px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white rounded-xl text-xs sm:text-sm font-sans font-bold cursor-pointer shadow-[0_0_20px_rgba(6,182,212,0.4)] transition-all flex items-center gap-2"
                   >
-                    {tIndex + 1 < triviaQuestions.length ? 'Next Question →' : 'See Score ✨'}
+                    <span>{tIndex + 1 < triviaQuestions.length ? 'Next Question →' : 'See Score ✨'}</span>
                   </button>
                 </div>
               )}
             </div>
           ) : (
-            <div className="text-center py-6 space-y-4">
-              <div className="w-14 h-14 mx-auto rounded-2xl bg-[#FFE66D] border border-[#F2DE79] flex items-center justify-center text-2xl shadow-2xs">
+            <div className="text-center py-8 space-y-5">
+              <div className="w-16 h-16 mx-auto rounded-2xl bg-amber-400/20 border-2 border-amber-400/60 flex items-center justify-center text-3xl shadow-[0_0_25px_rgba(251,191,36,0.3)]">
                 🏆
               </div>
-              <h3 className="font-serif text-2xl font-bold text-[#20304A]">
+              <h3 className="font-serif text-2xl sm:text-3xl font-bold text-white">
                 You scored {tScore} / {triviaQuestions.length}!
               </h3>
-              <p className="font-handwriting text-xl text-[#20304A]/80 max-w-sm mx-auto font-bold">
+              <p className="font-handwriting text-2xl text-amber-200/90 max-w-sm mx-auto font-bold">
                 {tScore === triviaQuestions.length
-                  ? 'Perfect memory! You know every single chapter by heart.'
-                  : 'A couple silly slips, but still 100% certified Abhi!'}
+                  ? 'PERFECT RUN! High score unlocked, Abhi.'
+                  : 'Great effort! 100% certified Abhi & Parina moments.'}
               </p>
               <button
                 type="button"
                 onClick={handleTriviaReset}
-                className="px-4 py-2 bg-[#20304A] text-white rounded-xl text-xs font-sans font-medium inline-flex items-center gap-1.5 cursor-pointer"
+                className="px-5 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white rounded-xl text-xs sm:text-sm font-sans font-bold inline-flex items-center gap-2 cursor-pointer shadow-[0_0_20px_rgba(168,85,247,0.4)] transition-all"
               >
-                <RotateCcw className="w-3.5 h-3.5" />
+                <RotateCcw className="w-4 h-4" />
                 <span>Play Again</span>
               </button>
             </div>
@@ -296,87 +350,184 @@ export const GamesSection: React.FC<GamesSectionProps> = () => {
       )}
 
       {/* ======================================================== */}
-      {/* SECTION 2: WHO SAID IT?                                  */}
+      {/* SECTION 2: WHO’S MORE LIKELY TO?                         */}
+      {/* Dedicated colors for Abhinab (Gold) & Parina (Pink)      */}
+      {/* Always clickable & togglable before proceeding           */}
       {/* ======================================================== */}
-      {activeTab === 'who-said-it' && (
-        <div className="bg-white rounded-3xl border border-[#93D5FD] p-6 sm:p-8 shadow-2xs relative">
+      {activeTab === 'likely' && (
+        <div className="bg-[#151A2C] rounded-3xl border-2 border-[#2D395B] p-6 sm:p-9 shadow-[0_20px_50px_rgba(0,0,0,0.6)] relative overflow-hidden">
+          {/* Subtle neon glow lines */}
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-400 via-pink-400 to-purple-400 opacity-70" />
+
           {!wFinished ? (
-            <div className="space-y-5">
-              <div className="flex items-center justify-between text-xs font-mono text-[#20304A]/60 pb-2 border-b border-[#BFE8FF]">
-                <span>ROUND {wIndex + 1} OF {whoSaidItQuotes.length}</span>
-                <span>SCORE: {wScore}</span>
+            <div className="space-y-6">
+              <div className="flex items-center justify-between text-xs font-mono text-pink-300 pb-3 border-b border-[#283556]">
+                <span className="tracking-wider">ROUND {wIndex + 1} / {likelyQuestions.length}</span>
+                <span className="text-stone-400 text-[11px]">Tap to change answer anytime</span>
               </div>
 
-              <div className="bg-[#FFFDF0] rounded-2xl border border-[#FFE66D] p-6 text-center shadow-inner">
-                <span className="text-[10px] font-mono text-amber-700 uppercase font-bold tracking-widest block mb-2">
-                  WHO UTTERED THIS?
-                </span>
-                <p className="font-serif text-xl sm:text-2xl text-[#20304A] font-bold">
-                  {whoSaidItQuotes[wIndex].text}
-                </p>
+              <h3 className="font-serif text-xl sm:text-2xl font-bold text-white tracking-tight leading-snug">
+                {likelyQuestions[wIndex].question}
+              </h3>
+
+              {/* 2 Dedicated Distinct Buttons: Abhinab (Warm Golden) vs Parina (Soft Pink) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+                {/* 1. ABHINAB BUTTON */}
+                {(() => {
+                  const isSelected = wCurrentChoice === 'Abhinab';
+                  const isCorrect = likelyQuestions[wIndex].correct === 'Abhinab';
+
+                  let btnStyle = 'bg-[#FFE66D]/85 hover:bg-[#FFE66D] border-2 border-[#E5C338] text-[#1E293B] hover:scale-[1.01] shadow-sm';
+                  let subtextStyle = 'text-[#1E293B]/70';
+                  let nameStyle = 'text-[#1E293B]';
+                  let indicator = <div className="w-5 h-5 rounded-full border border-[#1E293B]/30" />;
+
+                  if (isSelected) {
+                    if (isCorrect) {
+                      // Correct -> GREEN
+                      btnStyle = 'bg-emerald-600 border-2 border-emerald-400 text-white shadow-[0_0_25px_rgba(52,211,153,0.5)] ring-4 ring-emerald-400/40 scale-[1.02]';
+                      subtextStyle = 'text-emerald-100';
+                      nameStyle = 'text-white';
+                      indicator = (
+                        <div className="w-6 h-6 rounded-full bg-white text-emerald-700 flex items-center justify-center font-bold text-sm shadow-xs">
+                          ✓
+                        </div>
+                      );
+                    } else {
+                      // Wrong -> RED
+                      btnStyle = 'bg-rose-600 border-2 border-rose-400 text-white shadow-[0_0_25px_rgba(244,63,94,0.5)] ring-4 ring-rose-400/40 scale-[1.02]';
+                      subtextStyle = 'text-rose-100';
+                      nameStyle = 'text-white';
+                      indicator = (
+                        <div className="w-6 h-6 rounded-full bg-white text-rose-700 flex items-center justify-center font-bold text-sm shadow-xs">
+                          ✕
+                        </div>
+                      );
+                    }
+                  }
+
+                  return (
+                    <button
+                      type="button"
+                      onClick={() => handleWSelect('Abhinab')}
+                      className={`p-5 rounded-2xl text-left font-serif font-bold text-base sm:text-lg transition-all flex items-center justify-between cursor-pointer active:scale-95 ${btnStyle}`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="text-2xl">🙋‍♂️</span>
+                        <div className="flex flex-col">
+                          <span className={`font-bold ${nameStyle}`}>Abhinab</span>
+                          <span className={`text-[11px] font-sans font-medium ${subtextStyle}`}>Boyfriend</span>
+                        </div>
+                      </div>
+                      {indicator}
+                    </button>
+                  );
+                })()}
+
+                {/* 2. PARINA BUTTON */}
+                {(() => {
+                  const isSelected = wCurrentChoice === 'Parina';
+                  const isCorrect = likelyQuestions[wIndex].correct === 'Parina';
+
+                  let btnStyle = 'bg-[#FFA6C9]/85 hover:bg-[#FFA6C9] border-2 border-[#F48FB1] text-[#1E293B] hover:scale-[1.01] shadow-sm';
+                  let subtextStyle = 'text-[#1E293B]/70';
+                  let nameStyle = 'text-[#1E293B]';
+                  let indicator = <div className="w-5 h-5 rounded-full border border-[#1E293B]/30" />;
+
+                  if (isSelected) {
+                    if (isCorrect) {
+                      // Correct -> GREEN
+                      btnStyle = 'bg-emerald-600 border-2 border-emerald-400 text-white shadow-[0_0_25px_rgba(52,211,153,0.5)] ring-4 ring-emerald-400/40 scale-[1.02]';
+                      subtextStyle = 'text-emerald-100';
+                      nameStyle = 'text-white';
+                      indicator = (
+                        <div className="w-6 h-6 rounded-full bg-white text-emerald-700 flex items-center justify-center font-bold text-sm shadow-xs">
+                          ✓
+                        </div>
+                      );
+                    } else {
+                      // Wrong -> RED
+                      btnStyle = 'bg-rose-600 border-2 border-rose-400 text-white shadow-[0_0_25px_rgba(244,63,94,0.5)] ring-4 ring-rose-400/40 scale-[1.02]';
+                      subtextStyle = 'text-rose-100';
+                      nameStyle = 'text-white';
+                      indicator = (
+                        <div className="w-6 h-6 rounded-full bg-white text-rose-700 flex items-center justify-center font-bold text-sm shadow-xs">
+                          ✕
+                        </div>
+                      );
+                    }
+                  }
+
+                  return (
+                    <button
+                      type="button"
+                      onClick={() => handleWSelect('Parina')}
+                      className={`p-5 rounded-2xl text-left font-serif font-bold text-base sm:text-lg transition-all flex items-center justify-between cursor-pointer active:scale-95 ${btnStyle}`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="text-2xl">🙋‍♀️</span>
+                        <div className="flex flex-col">
+                          <span className={`font-bold ${nameStyle}`}>Parina</span>
+                          <span className={`text-[11px] font-sans font-medium ${subtextStyle}`}>Girlfriend</span>
+                        </div>
+                      </div>
+                      {indicator}
+                    </button>
+                  );
+                })()}
               </div>
 
-              {wAnswer === null ? (
-                <div className="grid grid-cols-2 gap-4">
-                  <button
-                    type="button"
-                    onClick={() => handleWGuess('Abhi')}
-                    className="p-4 rounded-2xl border border-[#93D5FD] bg-[#BFE8FF]/50 hover:bg-[#BFE8FF] font-serif font-bold text-[#20304A] text-base cursor-pointer shadow-2xs transition-colors"
-                  >
-                    Abhi 🙋‍♂️
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleWGuess('Parina')}
-                    className="p-4 rounded-2xl border border-[#FF9FC4] bg-[#FF9FC4]/30 hover:bg-[#FF9FC4]/50 font-serif font-bold text-[#20304A] text-base cursor-pointer shadow-2xs transition-colors"
-                  >
-                    Parina 🙋‍♀️
-                  </button>
+              {/* Caption displaying the Correct Answer clearly upon selection */}
+              {wCurrentChoice !== null && (
+                <div className="p-3.5 bg-[#1C233B] border border-[#2D395B] rounded-2xl text-center animate-in fade-in zoom-in-95 shadow-inner">
+                  <p className="font-sans text-sm sm:text-base font-semibold text-stone-200">
+                    Correct answer:{' '}
+                    <strong className="text-amber-300 font-bold">
+                      {likelyQuestions[wIndex].isCheatQuestion
+                        ? 'None of the above hehe.'
+                        : likelyQuestions[wIndex].correct}
+                    </strong>
+                  </p>
                 </div>
-              ) : (
-                <div className="space-y-4 text-center">
-                  <div
-                    className={`p-4 rounded-2xl border text-sm font-sans font-semibold ${
-                      wAnswer === whoSaidItQuotes[wIndex].author
-                        ? 'bg-[#9FE8C1]/40 border-emerald-400 text-emerald-950'
-                        : 'bg-[#FF9FC4]/40 border-rose-400 text-rose-950'
-                    }`}
-                  >
-                    {wAnswer === whoSaidItQuotes[wIndex].author ? 'Correct!' : 'Nope!'} Said by{' '}
-                    <strong>{whoSaidItQuotes[wIndex].author}</strong>.
-                    <span className="block text-xs font-normal text-[#20304A]/80 mt-1">
-                      {whoSaidItQuotes[wIndex].detail}
-                    </span>
-                  </div>
+              )}
+
+              {/* Proceed Button: Appears whenever an answer is chosen, user can still re-click options to change! */}
+              {wCurrentChoice !== null && (
+                <div className="pt-2 flex items-center justify-between">
+                  <span className="text-xs text-stone-400 font-sans italic">
+                    Choice: <strong className="text-white font-bold">{wCurrentChoice}</strong> (click other to switch)
+                  </span>
 
                   <button
                     type="button"
                     onClick={handleWNext}
-                    className="px-6 py-2.5 bg-[#20304A] text-white rounded-xl text-xs font-sans font-semibold cursor-pointer shadow-xs"
+                    className="px-6 py-3 bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 hover:from-pink-400 hover:to-indigo-400 text-white rounded-xl text-xs sm:text-sm font-sans font-bold cursor-pointer shadow-[0_0_20px_rgba(244,114,182,0.4)] transition-all flex items-center gap-1.5"
                   >
-                    {wIndex + 1 < whoSaidItQuotes.length ? 'Next Quote →' : 'See Results ✨'}
+                    <span>{wIndex + 1 < likelyQuestions.length ? 'Next Question →' : 'See Score ✨'}</span>
                   </button>
                 </div>
               )}
             </div>
           ) : (
-            <div className="text-center py-6 space-y-4">
-              <div className="w-14 h-14 mx-auto rounded-2xl bg-[#C9B5FF]/50 border border-[#C9B5FF] flex items-center justify-center text-2xl shadow-2xs">
+            <div className="text-center py-8 space-y-5">
+              <div className="w-16 h-16 mx-auto rounded-2xl bg-pink-400/20 border-2 border-pink-400/60 flex items-center justify-center text-3xl shadow-[0_0_25px_rgba(244,114,182,0.3)]">
                 💬
               </div>
-              <h3 className="font-serif text-2xl font-bold text-[#20304A]">
-                You scored {wScore} / {whoSaidItQuotes.length}!
+              <h3 className="font-serif text-2xl sm:text-3xl font-bold text-white">
+                You scored {calculatedWScore} / {likelyQuestions.length}!
               </h3>
-              <p className="font-handwriting text-xl text-[#20304A]/80 max-w-sm mx-auto font-bold">
-                No one knows who says what better than you two.
+              <p className="font-handwriting text-2xl text-pink-200/90 max-w-sm mx-auto font-bold">
+                {calculatedWScore >= 4
+                  ? 'Soulmates confirmed! You know every quirk and habit.'
+                  : 'Playful debates and endless laughs, exactly how we like it.'}
               </p>
               <button
                 type="button"
                 onClick={handleWReset}
-                className="px-4 py-2 bg-[#20304A] text-white rounded-xl text-xs font-sans font-medium inline-flex items-center gap-1.5 cursor-pointer"
+                className="px-5 py-2.5 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-400 hover:to-purple-500 text-white rounded-xl text-xs sm:text-sm font-sans font-bold inline-flex items-center gap-2 cursor-pointer shadow-[0_0_20px_rgba(244,114,182,0.4)] transition-all"
               >
-                <RotateCcw className="w-3.5 h-3.5" />
-                <span>Try Again</span>
+                <RotateCcw className="w-4 h-4" />
+                <span>Play Again</span>
               </button>
             </div>
           )}

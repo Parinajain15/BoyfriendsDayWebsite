@@ -24,6 +24,37 @@
   background-size: 28px 28px;
 }
 
+/* Retro Arcade Canvas for Games Page */
+.bg-arcade-canvas {
+  background-color: #0E121E;
+  background-image: 
+    radial-gradient(rgba(0, 229, 255, 0.12) 1.5px, transparent 1.5px),
+    radial-gradient(rgba(255, 77, 141, 0.08) 1px, transparent 1px);
+  background-size: 32px 32px, 16px 16px;
+  background-position: 0 0, 16px 16px;
+}
+
+/* Soft Pastel Rainbow Canvas for Mixtape Page */
+.bg-pastel-rainbow-canvas {
+  background-color: #FAF5FF;
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(255, 182, 193, 0.35) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(255, 230, 109, 0.35) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(201, 181, 255, 0.35) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, rgba(159, 232, 193, 0.35) 0px, transparent 50%),
+    radial-gradient(#D6C6F5 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 28px 28px;
+}
+
+/* Romantic Blush Pink Canvas for Love Letter Page */
+.bg-rose-canvas {
+  background-color: #FDF1F4;
+  background-image: 
+    radial-gradient(at 50% 0%, rgba(254, 205, 219, 0.45) 0px, transparent 65%),
+    radial-gradient(rgba(244, 114, 182, 0.22) 1.2px, transparent 1.2px);
+  background-size: 100% 100%, 26px 26px;
+}
+
 /* Stationery Lined Papers in requested brighter palette */
 .bg-lined-paper {
   background-color: #FFFFFF;

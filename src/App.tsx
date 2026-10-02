@@ -368,8 +368,49 @@ export default function App() {
 
   const currentNext = nextSectionMap[currentSection];
 
+  // Distinct visual identity per page
+  const sectionThemes: Record<NavSection, {
+    container: string;
+    footer: string;
+    transitionBtn: string;
+    nextIconColor: string;
+  }> = {
+    home: {
+      container: 'bg-[#BFE8FF] bg-scrapbook-canvas text-[#20304A]',
+      footer: 'border-t border-[#93D5FD] bg-white/90 text-[#20304A]',
+      transitionBtn: 'bg-white/95 hover:bg-white border-[#93D5FD] hover:border-blue-400 text-[#20304A]',
+      nextIconColor: 'text-blue-600',
+    },
+    memories: {
+      container: 'bg-[#CCE8FA] bg-scrapbook-canvas text-[#20304A]',
+      footer: 'border-t border-[#93D5FD] bg-white/90 text-[#20304A]',
+      transitionBtn: 'bg-white/95 hover:bg-white border-[#93D5FD] hover:border-blue-400 text-[#20304A]',
+      nextIconColor: 'text-blue-600',
+    },
+    music: {
+      container: 'bg-[#FAF5FF] bg-pastel-rainbow-canvas text-[#24324A] selection:bg-[#C084FC] selection:text-white',
+      footer: 'border-t border-purple-200 bg-white/85 text-[#24324A]',
+      transitionBtn: 'bg-white/95 hover:bg-white border-purple-200 hover:border-purple-400 text-[#24324A]',
+      nextIconColor: 'text-purple-600',
+    },
+    quiz: {
+      container: 'bg-[#0E121E] bg-arcade-canvas text-stone-100 selection:bg-cyan-500 selection:text-black',
+      footer: 'border-t border-[#252E4B] bg-[#121626]/95 text-stone-300',
+      transitionBtn: 'bg-[#181E33] hover:bg-[#202842] border-[#2E3C66] hover:border-cyan-400 text-white shadow-[0_4px_20px_rgba(0,0,0,0.5)]',
+      nextIconColor: 'text-cyan-400',
+    },
+    letter: {
+      container: 'bg-[#FDF1F4] bg-rose-canvas text-[#24324A] selection:bg-[#FB7185] selection:text-white',
+      footer: 'border-t border-rose-200 bg-rose-50/90 text-rose-950',
+      transitionBtn: 'bg-white/95 hover:bg-white border-rose-200 hover:border-rose-400 text-[#24324A]',
+      nextIconColor: 'text-rose-600',
+    },
+  };
+
+  const currentTheme = sectionThemes[currentSection];
+
   return (
-    <div className="min-h-screen bg-[#BFE8FF] bg-scrapbook-canvas text-[#20304A] font-sans selection:bg-[#FF9FC4] selection:text-[#20304A] flex flex-col justify-between">
+    <div className={`min-h-screen ${currentTheme.container} font-sans flex flex-col justify-between transition-colors duration-200`}>
       {/* Draft-1 Navigation Header */}
       <Navbar
         currentSection={currentSection}
@@ -430,19 +471,19 @@ export default function App() {
           <button
             type="button"
             onClick={() => navigateTo(currentNext.next)}
-            className="w-full py-3 px-5 bg-white/95 hover:bg-white border border-[#93D5FD] hover:border-blue-400 rounded-2xl shadow-sm text-xs sm:text-sm font-sans font-bold text-[#20304A] flex items-center justify-between group transition-all cursor-pointer"
+            className={`w-full py-3 px-5 border rounded-2xl shadow-sm text-xs sm:text-sm font-sans font-bold flex items-center justify-between group transition-all cursor-pointer ${currentTheme.transitionBtn}`}
           >
             <div className="flex items-center gap-2">
               <span className="text-base">{currentNext.icon}</span>
               <span>Next: {currentNext.label}</span>
             </div>
-            <ChevronRight className="w-4 h-4 text-blue-600 group-hover:translate-x-1 transition-transform" />
+            <ChevronRight className={`w-4 h-4 ${currentTheme.nextIconColor} group-hover:translate-x-1 transition-transform`} />
           </button>
         </div>
       </main>
 
       {/* Scrapbook Footer */}
-      <footer className="border-t border-[#93D5FD] bg-white/90 backdrop-blur-xs py-8 px-4 text-center">
+      <footer className={`border-t backdrop-blur-xs py-8 px-4 text-center transition-colors duration-200 ${currentTheme.footer}`}>
         <div className="max-w-md mx-auto space-y-2.5">
           <div className="flex items-center justify-center gap-2 text-rose-500">
             <Heart className="w-4 h-4 fill-rose-500" />

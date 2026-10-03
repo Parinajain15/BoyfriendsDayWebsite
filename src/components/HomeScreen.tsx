@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { NavSection } from './Navbar';
-import { Award, Heart } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import confetti from 'canvas-confetti';
 import { SurpriseWheel } from './SurpriseWheel';
 import { ScratchCoupon } from './ScratchCoupon';
-import { NextDateHeart } from './NextDateHeart';
+import { playPopSound, playSparkleSound } from '../utils/audio';
+import { Sparkles, Heart, Zap, X } from 'lucide-react';
+import { NavSection } from './Navbar';
 
 interface HomeScreenProps {
   boyfriendName: string;
@@ -13,12 +14,233 @@ interface HomeScreenProps {
   onNavigate?: (section: NavSection) => void;
 }
 
+// -------------------------------------------------------------
+// ADORABLE CHIBI SHINCHAN & FLUFFY PUPPY VECTOR ILLUSTRATIONS
+// Wholesome, soft rounded, big expressive eyes, premium craft
+// -------------------------------------------------------------
+
+// Second Adorable Chibi Puppy for Top-Left Corner:
+// Warm light brown / caramel fur, darker brown floppy ears, cream muzzle, rosy pink cheeks & big expressive dark eyes
+const SecondCuteChibiPuppy: React.FC<{ className?: string }> = ({ className = '' }) => (
+  <svg viewBox="0 0 140 140" className={`w-28 h-28 select-none ${className}`} fill="none">
+    {/* Soft Drop Shadow for sticker depth */}
+    <ellipse cx="70" cy="132" rx="40" ry="6" fill="#000000" opacity="0.18" />
+
+    {/* Darker Brown Floppy Ears */}
+    <g>
+      {/* Left Ear (playful floppy angle) */}
+      <path
+        d="M 36 44 C 18 36, 12 65, 20 84 C 26 96, 40 92, 42 78 Z"
+        fill="#854823"
+        stroke="#1A1A1A"
+        strokeWidth="4"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M 28 54 C 20 50, 18 70, 24 80 C 28 86, 36 84, 37 76 Z"
+        fill="#6D3716"
+        opacity="0.5"
+      />
+
+      {/* Right Ear (floppy & perky angle) */}
+      <path
+        d="M 104 44 C 122 36, 128 65, 120 84 C 114 96, 100 92, 98 78 Z"
+        fill="#854823"
+        stroke="#1A1A1A"
+        strokeWidth="4"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M 112 54 C 120 50, 122 70, 116 80 C 112 86, 104 84, 103 76 Z"
+        fill="#6D3716"
+        opacity="0.5"
+      />
+    </g>
+
+    {/* Warm Light Brown / Caramel Round Head */}
+    <circle
+      cx="70"
+      cy="68"
+      r="44"
+      fill="#D99B62"
+      stroke="#1A1A1A"
+      strokeWidth="4"
+    />
+
+    {/* Fluffy Caramel Tuft on Top */}
+    <path
+      d="M 64 26 C 66 18, 74 18, 76 26"
+      stroke="#1A1A1A"
+      strokeWidth="3.5"
+      strokeLinecap="round"
+      fill="#D99B62"
+    />
+
+    {/* Lighter Caramel Forehead Glow */}
+    <ellipse cx="70" cy="48" rx="20" ry="12" fill="#E4AB74" opacity="0.6" />
+
+    {/* Big Expressive Dark Manga Puppy Eyes with Dual Catchlights */}
+    <g>
+      {/* Left Eye */}
+      <ellipse cx="50" cy="62" rx="8.5" ry="11" fill="#1A1A1A" />
+      <circle cx="47" cy="57" r="3.8" fill="#FFFFFF" />
+      <circle cx="53" cy="66" r="1.8" fill="#FFFFFF" />
+      <circle cx="48" cy="65" r="1" fill="#FFFFFF" />
+
+      {/* Right Eye */}
+      <ellipse cx="90" cy="62" rx="8.5" ry="11" fill="#1A1A1A" />
+      <circle cx="87" cy="57" r="3.8" fill="#FFFFFF" />
+      <circle cx="93" cy="66" r="1.8" fill="#FFFFFF" />
+      <circle cx="88" cy="65" r="1" fill="#FFFFFF" />
+    </g>
+
+    {/* Cute Puppy Brow Dots */}
+    <ellipse cx="49" cy="46" rx="3.5" ry="2.5" fill="#BF7E48" />
+    <ellipse cx="91" cy="46" rx="3.5" ry="2.5" fill="#BF7E48" />
+
+    {/* Soft Radiant Pink Cheeks */}
+    <circle cx="35" cy="74" r="8.5" fill="#FF70A6" opacity="0.8" />
+    <circle cx="105" cy="74" r="8.5" fill="#FF70A6" opacity="0.8" />
+
+    {/* Cream Muzzle / Snout */}
+    <ellipse cx="70" cy="76" rx="16" ry="12" fill="#FFF7ED" stroke="#1A1A1A" strokeWidth="2.5" />
+
+    {/* Dark Button Puppy Nose */}
+    <path
+      d="M 70 71 C 67 67, 63 68, 63 71 C 63 74, 70 77, 70 77 C 70 77, 77 74, 77 71 C 77 68, 73 67, 70 71 Z"
+      fill="#1A1A1A"
+    />
+
+    {/* Sweet Smiling Mouth with Tiny Tongue */}
+    <path
+      d="M 64 78 Q 70 82 76 78"
+      stroke="#1A1A1A"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      fill="none"
+    />
+    <path
+      d="M 66 80 C 66 89, 74 89, 74 80 Z"
+      fill="#FF3366"
+      stroke="#1A1A1A"
+      strokeWidth="2"
+    />
+
+    {/* Cute Waving Caramel Paw with Darker Pads */}
+    <g transform="translate(98, 86) rotate(-20)">
+      <ellipse cx="12" cy="10" rx="9" ry="7" fill="#D99B62" stroke="#1A1A1A" strokeWidth="3" />
+      <circle cx="8" cy="7" r="1.5" fill="#854823" />
+      <circle cx="12" cy="5" r="1.5" fill="#854823" />
+      <circle cx="16" cy="7" r="1.5" fill="#854823" />
+      <ellipse cx="12" cy="11" rx="4" ry="3" fill="#854823" />
+    </g>
+  </svg>
+);
+
+// Irresistible Chibi Puppy with big glossy eyes, floppy ears & cute paws
+const SuperCuteChibiPuppy: React.FC<{ className?: string }> = ({ className = '' }) => (
+  <svg viewBox="0 0 140 140" className={`w-28 h-28 select-none ${className}`} fill="none">
+    {/* Soft Drop Shadow */}
+    <ellipse cx="70" cy="132" rx="42" ry="6" fill="#000000" opacity="0.15" />
+
+    {/* Soft Floppy Caramel Ears */}
+    <g>
+      {/* Left Ear */}
+      <path
+        d="M 38 48 C 20 40, 10 70, 18 90 C 24 104, 38 100, 42 86 Z"
+        fill="#E69547"
+        stroke="#1A1A1A"
+        strokeWidth="4"
+        strokeLinejoin="round"
+      />
+      {/* Right Ear */}
+      <path
+        d="M 102 48 C 120 40, 130 70, 122 90 C 116 104, 102 100, 98 86 Z"
+        fill="#E69547"
+        stroke="#1A1A1A"
+        strokeWidth="4"
+        strokeLinejoin="round"
+      />
+    </g>
+
+    {/* Big Chubby Round Puppy Head */}
+    <circle
+      cx="70"
+      cy="68"
+      r="44"
+      fill="#FFF6ED"
+      stroke="#1A1A1A"
+      strokeWidth="4"
+    />
+
+    {/* Caramel Eye Patch on Left Eye */}
+    <ellipse cx="50" cy="62" rx="18" ry="16" fill="#FCE0C5" />
+
+    {/* Huge Glistening Puppy-Dog Eyes */}
+    <g>
+      {/* Left Eye */}
+      <circle cx="50" cy="62" r="9" fill="#1A1A1A" />
+      <circle cx="47" cy="58" r="3.8" fill="#FFFFFF" />
+      <circle cx="53" cy="66" r="1.8" fill="#FFFFFF" />
+      <circle cx="48" cy="65" r="1" fill="#FFFFFF" />
+
+      {/* Right Eye */}
+      <circle cx="90" cy="62" r="9" fill="#1A1A1A" />
+      <circle cx="87" cy="58" r="3.8" fill="#FFFFFF" />
+      <circle cx="93" cy="66" r="1.8" fill="#FFFFFF" />
+      <circle cx="88" cy="65" r="1" fill="#FFFFFF" />
+    </g>
+
+    {/* Soft Radiant Pink Cheeks */}
+    <circle cx="36" cy="74" r="8" fill="#FF8FAB" opacity="0.75" />
+    <circle cx="104" cy="74" r="8" fill="#FF8FAB" opacity="0.75" />
+
+    {/* White Snout */}
+    <ellipse cx="70" cy="76" rx="16" ry="12" fill="#FFFFFF" stroke="#1A1A1A" strokeWidth="2.5" />
+
+    {/* Cute Heart-shaped Puppy Nose */}
+    <path
+      d="M 70 71 C 67 67, 63 68, 63 71 C 63 74, 70 78, 70 78 C 70 78, 77 74, 77 71 C 77 68, 73 67, 70 71 Z"
+      fill="#1A1A1A"
+    />
+
+    {/* Happy Smiling Puppy Mouth & Tongue */}
+    <path
+      d="M 64 78 Q 70 82 76 78"
+      stroke="#1A1A1A"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      fill="none"
+    />
+    <path
+      d="M 66 80 C 66 89, 74 89, 74 80 Z"
+      fill="#FF3366"
+      stroke="#1A1A1A"
+      strokeWidth="2"
+    />
+
+    {/* Cute Little Paws Peeking Over Edge */}
+    <g transform="translate(42, 104)">
+      <ellipse cx="10" cy="8" rx="8" ry="6" fill="#FFF6ED" stroke="#1A1A1A" strokeWidth="3" />
+      <circle cx="6" cy="4" r="1.5" fill="#E69547" />
+      <circle cx="10" cy="3" r="1.5" fill="#E69547" />
+      <circle cx="14" cy="4" r="1.5" fill="#E69547" />
+    </g>
+    <g transform="translate(78, 104)">
+      <ellipse cx="10" cy="8" rx="8" ry="6" fill="#FFF6ED" stroke="#1A1A1A" strokeWidth="3" />
+      <circle cx="6" cy="4" r="1.5" fill="#E69547" />
+      <circle cx="10" cy="3" r="1.5" fill="#E69547" />
+      <circle cx="14" cy="4" r="1.5" fill="#E69547" />
+    </g>
+  </svg>
+);
+
 export const HomeScreen: React.FC<HomeScreenProps> = ({
-  boyfriendName,
-  senderName,
   anniversaryDate,
 }) => {
-  // Live duration counter
+  // -------------------------------------------------------------
+  // 1. RELATIONSHIP TIMER (ORIGINAL FUNCTIONALITY UNCHANGED)
+  // -------------------------------------------------------------
   const [timeTogether, setTimeTogether] = useState({
     days: 0,
     hours: 0,
@@ -45,281 +267,292 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
     return () => clearInterval(interval);
   }, [anniversaryDate]);
 
+  // -------------------------------------------------------------
+  // 2. LOVE QUESTION INTERACTION STATE (SMOOTH & UNPREDICTABLE DODGE)
+  // -------------------------------------------------------------
+  const [noPos, setNoPos] = useState({ x: 0, y: 0 });
+  const [dodgeCount, setDodgeCount] = useState(0);
+  const [reactionText, setReactionText] = useState('');
+  const [yesSuccess, setYesSuccess] = useState(false);
+  const questionBoxRef = useRef<HTMLDivElement | null>(null);
+
+  const dodgeReactions = [
+    'Nice try mister! 😂',
+    'Too slow, Abhi! 🏃‍♂️💨',
+    'Error 404: "NO" not found! 🚀',
+    'Not an option dummy! 🐶',
+    'You know you love me! 😏',
+    'Give up and click YES! 😜',
+    'My love is inescapable! 🔒',
+    'Resistance is futile, boyfriend! 💖',
+  ];
+
+  const dodgeNoButton = () => {
+    playPopSound();
+
+    // Generate random offset within bounds, at least 80px away from current
+    const maxX = 120;
+    const maxY = 65;
+    let nextX = (Math.random() * 2 - 1) * maxX;
+    let nextY = (Math.random() * 2 - 1) * maxY;
+
+    if (Math.abs(nextX - noPos.x) < 55) {
+      nextX = nextX > 0 ? nextX + 65 : nextX - 65;
+    }
+    if (Math.abs(nextY - noPos.y) < 35) {
+      nextY = nextY > 0 ? nextY + 45 : nextY - 45;
+    }
+
+    setNoPos({ x: nextX, y: nextY });
+    setDodgeCount((prev) => prev + 1);
+    setReactionText(dodgeReactions[dodgeCount % dodgeReactions.length]);
+  };
+
+  const handleYesClick = () => {
+    playSparkleSound();
+    setYesSuccess(true);
+    confetti({
+      particleCount: 90,
+      spread: 100,
+      origin: { y: 0.6 },
+      colors: ['#FFE600', '#FF2D87', '#0055FF', '#FF5500', '#FFFFFF', '#000000'],
+    });
+  };
+
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-10 space-y-14 sm:space-y-18 relative select-none">
+    <div className="relative w-full max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-10 space-y-16 sm:space-y-22 select-none overflow-x-hidden">
       {/* ======================================================== */}
-      {/* BACKGROUND DECORATIONS (WARM IVORY SCRAPBOOK SPREAD)     */}
-      {/* Hand-drawn flowers, hearts, stars, arrows, tiny bows     */}
-      {/* Hand-placed look — NO repetitive dot grid!              */}
+      {/* RETRO POP DECORATIONS & FLOATING STICKERS IN BACKGROUND  */}
       {/* ======================================================== */}
       <div className="absolute inset-0 pointer-events-none select-none overflow-hidden -z-10">
-        {/* Curved decorative sketchbook lines */}
-        <svg className="absolute inset-0 w-full h-full opacity-30" preserveAspectRatio="none" viewBox="0 0 1000 1300" fill="none">
-          <path d="M 80 160 C 220 280, 240 120, 440 220 S 760 160, 940 300" stroke="#2B211E" strokeWidth="1.2" strokeDasharray="5 7" />
-          <path d="M 60 480 C 140 600, 220 780, 160 980 S 300 1200, 480 1280" stroke="#E94B45" strokeWidth="1" strokeDasharray="4 6" />
-          <path d="M 940 450 C 820 620, 890 820, 850 1050" stroke="#A9D8EA" strokeWidth="1.2" strokeDasharray="6 8" />
-        </svg>
-
-        {/* 1. Doodled Flower (Upper Left) */}
-        <div className="absolute top-10 left-8 opacity-75 animate-float-petal">
-          <svg width="42" height="42" viewBox="0 0 42 42" fill="none">
-            <circle cx="21" cy="21" r="5" fill="#F6D66A" stroke="#2B211E" strokeWidth="1.5" />
-            <circle cx="21" cy="11" r="5" fill="#F29AAF" stroke="#2B211E" strokeWidth="1.2" opacity="0.9" />
-            <circle cx="31" cy="21" r="5" fill="#F29AAF" stroke="#2B211E" strokeWidth="1.2" opacity="0.9" />
-            <circle cx="21" cy="31" r="5" fill="#F29AAF" stroke="#2B211E" strokeWidth="1.2" opacity="0.9" />
-            <circle cx="11" cy="21" r="5" fill="#F29AAF" stroke="#2B211E" strokeWidth="1.2" opacity="0.9" />
-          </svg>
+        <div className="absolute top-10 left-6 text-[#FFE600] font-black text-3xl sm:text-4xl animate-bounce drop-shadow-[2px_2px_0px_#000]">
+          ★
+        </div>
+        <div className="absolute top-24 right-8 text-[#FF2D87] font-black text-3xl sm:text-4xl -rotate-12 drop-shadow-[2px_2px_0px_#000]">
+          ✦
+        </div>
+        <div className="absolute top-[400px] left-4 text-[#0055FF] font-black text-4xl rotate-12 drop-shadow-[2px_2px_0px_#000]">
+          ★
+        </div>
+        <div className="absolute top-[800px] right-6 text-[#FFE600] font-black text-4xl animate-pulse drop-shadow-[2px_2px_0px_#000]">
+          ✦
+        </div>
+        <div className="absolute bottom-36 left-8 text-[#FF1744] font-black text-4xl drop-shadow-[2px_2px_0px_#000]">
+          ♥
         </div>
 
-        {/* 2. Doodled Bow (Upper Right) */}
-        <div className="absolute top-8 right-12 opacity-80 rotate-6">
-          <svg width="44" height="34" viewBox="0 0 44 34" fill="none">
-            <path d="M22 17 C14 8, 4 10, 6 18 C8 24, 18 20, 22 17 Z" fill="#A9D8EA" stroke="#2B211E" strokeWidth="1.5" />
-            <path d="M22 17 C30 8, 40 10, 38 18 C36 24, 26 20, 22 17 Z" fill="#A9D8EA" stroke="#2B211E" strokeWidth="1.5" />
-            <circle cx="22" cy="17" r="4" fill="#F6D66A" stroke="#2B211E" strokeWidth="1.5" />
-            <path d="M20 20 C18 26, 14 30, 12 32" stroke="#2B211E" strokeWidth="1.5" strokeLinecap="round" />
-            <path d="M24 20 C26 26, 30 30, 32 32" stroke="#2B211E" strokeWidth="1.5" strokeLinecap="round" />
-          </svg>
+        {/* Playful Stickers in Margins */}
+        <div className="absolute top-4 right-1/4 px-4 py-1 bg-[#FFE600] border-2 border-black text-black font-mono font-black text-[10px] uppercase tracking-wider rotate-3 shadow-[3px_3px_0px_#000]">
+          OFFICIAL BOYFRIEND ACCESS ONLY 🔥
         </div>
-
-        {/* 3. Doodled Music Notes */}
-        <div className="absolute top-80 right-14 opacity-70 -rotate-12">
-          <svg width="28" height="32" viewBox="0 0 28 32" fill="none">
-            <path d="M10 24 C10 27, 7 29, 4 28 C1 27, 0 24, 2 21 C4 18, 9 19, 10 21 L10 6 L24 2 L24 18 C24 21, 21 23, 18 22 C15 21, 14 18, 16 15 C18 12, 23 13, 24 15 L24 2" stroke="#2B211E" strokeWidth="1.8" strokeLinecap="round" fill="none" />
-          </svg>
+        <div className="absolute top-[650px] -left-2 px-4 py-1 bg-[#FF2D87] border-2 border-black text-white font-mono font-black text-[10px] uppercase tracking-wider -rotate-6 shadow-[3px_3px_0px_#000]">
+          100% HANDMADE BY PARINA 💌
         </div>
-
-        {/* 4. Doodled Tiny Postage Stamp Detail */}
-        <div className="absolute top-[520px] left-8 opacity-65 rotate-12">
-          <div className="w-16 h-12 border-2 border-dashed border-[#2B211E]/40 rounded-xs flex flex-col items-center justify-center p-1 bg-[#FFFDF7]">
-            <span className="text-[8px] font-mono font-bold text-[#E94B45]">ABHI ♡ PARINA</span>
-            <span className="text-[10px] text-[#A9D8EA]">★ 2026 ★</span>
-          </div>
-        </div>
-
-        {/* 5. Handwritten Little Annotations & Sparkles */}
-        <div className="absolute top-36 left-1/4 text-[#E94B45] text-lg font-bold">♥</div>
-        <div className="absolute top-28 right-1/3 text-[#F6D66A] text-xl font-bold">✦</div>
-        <div className="absolute top-96 left-12 text-[#A9D8EA] text-2xl font-bold">★</div>
-        <div className="absolute bottom-96 right-16 text-[#F29AAF] text-xl font-bold">♥</div>
-        <div className="absolute bottom-48 left-1/3 text-[#F6D66A] text-lg font-bold">✧</div>
       </div>
 
       {/* ======================================================== */}
-      {/* 1. TIMER SECTION                                         */}
-      {/* "Our Story in Numbers" label removed!                    */}
-      {/* "We have been in love for..."                            */}
-      {/* Horizontal timeline with 4 hanging scrapbook tags:       */}
-      {/* DAYS (Ivory), HOURS (Powder Blue), MINUTES (Tomato Red), */}
-      {/* SECONDS (Muted Yellow)                                   */}
+      {/* 2. RELATIONSHIP TIMER — TOP OF HOME PAGE                 */}
+      {/* EXACT calculations & displayed info, BOLD POP STYLING    */}
       {/* ======================================================== */}
-      <section className="relative text-center max-w-4xl mx-auto pt-2">
-        <div className="space-y-1 mb-6 sm:mb-8">
-          <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl text-[#2B211E] font-black tracking-tight">
-            We have been in love for…
-          </h1>
-          <p className="font-sans text-xs text-[#2B211E]/60 tracking-wider uppercase font-medium">
-            every second counted with you
-          </p>
-        </div>
-
-        {/* Horizontal Hanging Scrapbook String Timeline */}
-        <div className="relative max-w-3xl mx-auto px-4 sm:px-6">
-          {/* Hand-drawn connecting string */}
-          <div className="relative h-[2px] w-full bg-[#2B211E] shadow-2xs my-4">
-            {/* Small pins holding string */}
-            <div className="absolute top-1/2 left-[12%] -translate-y-1/2 w-3 h-3 rounded-full bg-[#F6D66A] border-2 border-[#2B211E] shadow-xs" />
-            <div className="absolute top-1/2 left-[38%] -translate-y-1/2 w-3 h-3 rounded-full bg-[#A9D8EA] border-2 border-[#2B211E] shadow-xs" />
-            <div className="absolute top-1/2 left-[64%] -translate-y-1/2 w-3 h-3 rounded-full bg-[#E94B45] border-2 border-[#2B211E] shadow-xs" />
-            <div className="absolute top-1/2 left-[88%] -translate-y-1/2 w-3 h-3 rounded-full bg-[#F6D66A] border-2 border-[#2B211E] shadow-xs" />
-          </div>
-
-          {/* 4 Hanging Tags with specific individual colors & subtle tilt */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 mt-6">
-            {/* TAG 1: DAYS (Warm Ivory with Tomato Red accent) */}
-            <div className="relative pt-3 flex flex-col items-center">
-              <div className="absolute top-0 w-[1.5px] h-3 bg-[#2B211E]" />
-              <div className="w-full bg-[#FFFDF7] border-2 border-[#2B211E] rounded-2xl p-4 sm:p-5 text-center shadow-[0_8px_20px_rgba(43,33,30,0.12)] transform -rotate-[2deg] hover:rotate-0 transition-transform duration-300 relative group">
-                <div className="w-3 h-3 rounded-full bg-[#E94B45] border border-[#2B211E] mx-auto -mt-2 mb-2 shadow-2xs" />
-                <span className="font-serif text-3xl sm:text-4xl font-black text-[#2B211E] tabular-nums block">
-                  {timeTogether.days}
-                </span>
-                <span className="text-[11px] font-mono font-bold text-[#E94B45] tracking-widest uppercase mt-1 block">
-                  Days
-                </span>
-                <div className="absolute -bottom-1 -right-1 text-[#E94B45] text-[10px]">✦</div>
-              </div>
-            </div>
-
-            {/* TAG 2: HOURS (Powder Blue with Espresso text) */}
-            <div className="relative pt-3 flex flex-col items-center">
-              <div className="absolute top-0 w-[1.5px] h-3 bg-[#2B211E]" />
-              <div className="w-full bg-[#A9D8EA] border-2 border-[#2B211E] rounded-2xl p-4 sm:p-5 text-center shadow-[0_8px_20px_rgba(43,33,30,0.12)] transform rotate-[2deg] hover:rotate-0 transition-transform duration-300 relative group">
-                <div className="w-3 h-3 rounded-full bg-[#FFFDF7] border border-[#2B211E] mx-auto -mt-2 mb-2 shadow-2xs" />
-                <span className="font-sans text-3xl sm:text-4xl font-black text-[#2B211E] tabular-nums block">
-                  {timeTogether.hours}
-                </span>
-                <span className="text-[11px] font-mono font-bold text-[#2B211E] tracking-widest uppercase mt-1 block">
-                  Hours
-                </span>
-                <div className="absolute -bottom-1 -right-1 text-[#2B211E] text-[10px]">♥</div>
-              </div>
-            </div>
-
-            {/* TAG 3: MINUTES (Tomato Red with Warm Ivory text) */}
-            <div className="relative pt-3 flex flex-col items-center">
-              <div className="absolute top-0 w-[1.5px] h-3 bg-[#2B211E]" />
-              <div className="w-full bg-[#E94B45] border-2 border-[#2B211E] rounded-2xl p-4 sm:p-5 text-center shadow-[0_8px_20px_rgba(43,33,30,0.12)] transform -rotate-[1.5deg] hover:rotate-0 transition-transform duration-300 relative group">
-                <div className="w-3 h-3 rounded-full bg-[#F6D66A] border border-[#2B211E] mx-auto -mt-2 mb-2 shadow-2xs" />
-                <span className="font-serif text-3xl sm:text-4xl font-black text-[#FFFDF7] tabular-nums block drop-shadow-2xs">
-                  {timeTogether.minutes}
-                </span>
-                <span className="text-[11px] font-mono font-bold text-[#FFFDF7] tracking-widest uppercase mt-1 block">
-                  Minutes
-                </span>
-                <div className="absolute -bottom-1 -right-1 text-[#FFFDF7]/70 text-[10px]">✦</div>
-              </div>
-            </div>
-
-            {/* TAG 4: SECONDS (Muted Yellow with Espresso text) */}
-            <div className="relative pt-3 flex flex-col items-center">
-              <div className="absolute top-0 w-[1.5px] h-3 bg-[#2B211E]" />
-              <div className="w-full bg-[#F6D66A] border-2 border-dashed border-[#2B211E] rounded-2xl p-4 sm:p-5 text-center shadow-[0_8px_20px_rgba(43,33,30,0.12)] transform rotate-[2.5deg] hover:rotate-0 transition-transform duration-300 relative group">
-                <div className="w-3 h-3 rounded-full bg-[#2B211E] border border-[#F6D66A] mx-auto -mt-2 mb-2 shadow-2xs" />
-                <span className="font-sans text-3xl sm:text-4xl font-black text-[#2B211E] tabular-nums block">
-                  {timeTogether.seconds}
-                </span>
-                <span className="text-[11px] font-mono font-bold text-[#2B211E] tracking-widest uppercase mt-1 block">
-                  Seconds
-                </span>
-                <div className="absolute -bottom-1 -right-1 text-[#E94B45] text-[10px]">✧</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <p className="font-handwriting text-2xl sm:text-3xl text-[#2B211E] font-bold mt-7">
-          “…and I’d still choose you in every lifetime. ♡”
-        </p>
-      </section>
-
-      {/* ======================================================== */}
-      {/* 2 & 5. CERTIFICATE + NEXT DATE HEART (SIDE BY SIDE)      */}
-      {/* Certificate = Formal/Elegant Ivory Parchment             */}
-      {/* Heart = Playful/Romantic Hand-Drawn Artwork              */}
-      {/* Different sizes, rotations & scales arranged together    */}
-      {/* ======================================================== */}
-      <section className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center">
-        {/* ===================================================== */}
-        {/* OBJECT 1: OFFICIAL BEST BOYFRIEND CERTIFICATE (7 COLS) */}
-        {/* Warm ivory paper, espresso typography, red lines,    */}
-        {/* muted yellow seal, powder blue washi tape             */}
-        {/* ===================================================== */}
-        <div className="lg:col-span-7 relative group">
-          {/* Subtle Powder Blue Washi Tape holding top right corner */}
-          <div className="absolute -top-3.5 right-8 w-36 h-6 bg-[#A9D8EA] border border-[#2B211E]/30 text-[#2B211E] transform rotate-2 rounded-xs shadow-2xs z-20 flex items-center justify-center pointer-events-none">
-            <span className="text-[9px] font-mono font-bold tracking-widest uppercase">
-              OFFICIAL CERTIFIED
+      <section id="relationship-timer" className="relative text-center max-w-4xl mx-auto pt-2 space-y-6">
+        <div className="flex flex-col items-center justify-center space-y-3">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-[#FFE600] border-3 border-black rounded-full shadow-[4px_4px_0px_#000] -rotate-1 hover:rotate-0 transition-transform">
+            <Zap className="w-4 h-4 fill-black text-black" />
+            <span className="font-mono text-xs sm:text-sm font-black uppercase text-black tracking-wider">
+              OFFICIAL LOVE COUNTER ⏱️
             </span>
           </div>
 
-          {/* Certificate Paper Sheet */}
-          <div className="relative bg-[#FFFDF7] rounded-3xl border-2 border-[#2B211E] p-6 sm:p-9 shadow-[0_16px_36px_rgba(43,33,30,0.12)] transform -rotate-[1deg] hover:rotate-0 transition-transform duration-300 overflow-hidden">
-            {/* Hand-drawn Ornate Corners */}
-            <div className="absolute top-3 left-3 text-[#F6D66A] text-2xl font-serif select-none pointer-events-none">⌜</div>
-            <div className="absolute top-3 right-3 text-[#F6D66A] text-2xl font-serif select-none pointer-events-none">⌝</div>
-            <div className="absolute bottom-3 left-3 text-[#F6D66A] text-2xl font-serif select-none pointer-events-none">⌞</div>
-            <div className="absolute bottom-3 right-3 text-[#F6D66A] text-2xl font-serif select-none pointer-events-none">⌟</div>
+          <h1 className="font-serif text-3xl sm:text-5xl md:text-6xl font-black text-black tracking-tight leading-none drop-shadow-[2px_2px_0px_#FFFFFF]">
+            We have been in love for…
+          </h1>
 
-            {/* Inner Border with Red & Gold Accents */}
-            <div className="border border-[#F6D66A] rounded-2xl p-4 sm:p-6 bg-[#FFF8EF]/50 relative z-10 space-y-4">
-              {/* Header Badge & ID */}
-              <div className="flex items-center justify-between border-b border-[#2B211E]/15 pb-3">
-                <span className="text-[11px] font-mono font-bold text-[#E94B45] uppercase tracking-wider">
-                  NO. 2026-BF-01
-                </span>
-                {/* Muted Gold Seal */}
-                <div className="flex items-center gap-1.5 px-3 py-1 bg-[#F6D66A] rounded-full border border-[#2B211E]/30 shadow-2xs">
-                  <Award className="w-4 h-4 text-[#2B211E]" />
-                  <span className="text-[10px] font-mono font-extrabold text-[#2B211E] tracking-wider uppercase">
-                    GOLD TIER SEAL
-                  </span>
-                </div>
+          {/* EXACT TEXT REQUESTED: "EVERY SINGLE SECOND COUNTED WITH YOU!" */}
+          <p className="font-sans text-xs sm:text-sm font-black uppercase tracking-widest text-black bg-white/80 px-5 py-1.5 rounded-full border-3 border-black shadow-[3px_3px_0px_#000]">
+            EVERY SINGLE SECOND COUNTED WITH YOU!
+          </p>
+        </div>
+
+        {/* 4 Chunky Pop Timer Blocks */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 pt-2">
+          {/* BLOCK 1: DAYS (Bright Yellow) */}
+          <div className="relative group">
+            <div className="w-full bg-[#FFE600] border-4 border-black rounded-3xl p-4 sm:p-6 text-center shadow-[6px_6px_0px_#000000] transform -rotate-[2deg] hover:rotate-0 hover:-translate-y-1 transition-all duration-200">
+              <span className="font-serif text-4xl sm:text-5xl lg:text-6xl font-black text-black tabular-nums block leading-none">
+                {timeTogether.days}
+              </span>
+              <div className="mt-2.5 inline-block px-3 py-0.5 bg-black text-[#FFE600] font-mono text-xs sm:text-sm font-black uppercase tracking-wider rounded-full">
+                Days
               </div>
+            </div>
+          </div>
 
-              {/* Title & Conferred to */}
-              <div className="text-center pt-1 space-y-1">
-                <div className="flex items-center justify-center gap-2 text-[#E94B45]">
-                  <span>✦</span>
-                  <span className="text-xs font-mono font-bold uppercase tracking-widest text-[#2B211E]">
-                    HONORARY LIFETIME AWARD
-                  </span>
-                  <span>✦</span>
-                </div>
-                <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl text-[#2B211E] font-black tracking-tight">
-                  Official Best Boyfriend Certificate
-                </h2>
-                <p className="font-sans text-xs text-[#2B211E]/80">
-                  Presented with endless pride to:{' '}
-                  <strong className="text-[#2B211E] font-bold underline decoration-[#E94B45] decoration-2 underline-offset-2">
-                    {boyfriendName || 'Abhinab P Kashyap'}
-                  </strong>
-                </p>
+          {/* BLOCK 2: HOURS (Hot Pink) */}
+          <div className="relative group">
+            <div className="w-full bg-[#FF2D87] border-4 border-black rounded-3xl p-4 sm:p-6 text-center shadow-[6px_6px_0px_#000000] transform rotate-[2deg] hover:rotate-0 hover:-translate-y-1 transition-all duration-200">
+              <span className="font-serif text-4xl sm:text-5xl lg:text-6xl font-black text-white tabular-nums block leading-none drop-shadow-[2px_2px_0px_#000]">
+                {timeTogether.hours}
+              </span>
+              <div className="mt-2.5 inline-block px-3 py-0.5 bg-[#FFE600] text-black font-mono text-xs sm:text-sm font-black uppercase tracking-wider rounded-full border border-black">
+                Hours
               </div>
+            </div>
+          </div>
 
-              {/* Verified Checklist with Tomato Red checkmarks */}
-              <div className="space-y-2.5 py-3 text-xs sm:text-sm font-serif text-[#2B211E] bg-[#FFFDF7] rounded-xl p-3.5 border border-[#2B211E]/15">
-                <div className="flex items-start gap-2.5">
-                  <span className="text-[#E94B45] font-bold text-sm">✓</span>
-                  <span>Unlimited warm hugs & back scratches on demand</span>
-                </div>
-                <div className="flex items-start gap-2.5">
-                  <span className="text-[#E94B45] font-bold text-sm">✓</span>
-                  <span>Pardon for stealing my food or fries</span>
-                </div>
-                <div className="flex items-start gap-2.5">
-                  <span className="text-[#E94B45] font-bold text-sm">✓</span>
-                  <span>Permanent VIP residency inside my heart</span>
-                </div>
-                <div className="flex items-start gap-2.5">
-                  <span className="text-[#E94B45] font-bold text-sm">✓</span>
-                  <span>Entitled to endless love and affection</span>
-                </div>
+          {/* BLOCK 3: MINUTES (Electric Blue) */}
+          <div className="relative group">
+            <div className="w-full bg-[#0055FF] border-4 border-black rounded-3xl p-4 sm:p-6 text-center shadow-[6px_6px_0px_#000000] transform -rotate-[1.5deg] hover:rotate-0 hover:-translate-y-1 transition-all duration-200">
+              <span className="font-serif text-4xl sm:text-5xl lg:text-6xl font-black text-white tabular-nums block leading-none drop-shadow-[2px_2px_0px_#000]">
+                {timeTogether.minutes}
+              </span>
+              <div className="mt-2.5 inline-block px-3 py-0.5 bg-white text-black font-mono text-xs sm:text-sm font-black uppercase tracking-wider rounded-full border border-black">
+                Minutes
               </div>
+            </div>
+          </div>
 
-              {/* Signature Line */}
-              <div className="pt-2 flex items-center justify-between text-xs text-[#2B211E]/80 border-t border-[#2B211E]/15">
-                <span className="italic font-serif">Signed with all my love,</span>
-                <span className="font-handwriting text-2xl font-bold text-[#2B211E] border-b-2 border-[#E94B45] pb-0.5">
-                  {senderName || 'Parina'} ♡
-                </span>
+          {/* BLOCK 4: SECONDS (Cream White) */}
+          <div className="relative group">
+            <div className="w-full bg-[#FFFDF5] border-4 border-black rounded-3xl p-4 sm:p-6 text-center shadow-[6px_6px_0px_#000000] transform rotate-[2.5deg] hover:rotate-0 hover:-translate-y-1 transition-all duration-200">
+              <span className="font-serif text-4xl sm:text-5xl lg:text-6xl font-black text-[#FF1744] tabular-nums block leading-none">
+                {timeTogether.seconds}
+              </span>
+              <div className="mt-2.5 inline-block px-3 py-0.5 bg-black text-white font-mono text-xs sm:text-sm font-black uppercase tracking-wider rounded-full">
+                Seconds
               </div>
             </div>
           </div>
         </div>
 
-        {/* ===================================================== */}
-        {/* OBJECT 2: NEXT DATE HEART (5 COLS) — SIDE BY SIDE     */}
-        {/* Playful & Romantic Hand-Drawn Layered Heart Artwork   */}
-        {/* NO rectangular card! Drawn directly into composition  */}
-        {/* ===================================================== */}
-        <div className="lg:col-span-5 flex justify-center">
-          <NextDateHeart />
+        {/* Playful Handwriting Quote */}
+        <div className="pt-2">
+          <p className="font-handwriting text-2xl sm:text-3xl lg:text-4xl text-black font-black leading-snug drop-shadow-[1px_1px_0px_#FFE600]">
+            “…and I’d still choose you in every lifetime. ♡”
+          </p>
         </div>
       </section>
 
       {/* ======================================================== */}
-      {/* 3. SCRATCH CARD + SILVER COIN SECTION                    */}
-      {/* Wider and shorter vintage scratch ticket voucher         */}
-      {/* Realistic silver coin with "drag the coin →" & "scratch it!"*/}
+      {/* 3. LOVE QUESTION (QUIRKY & IMPOSSIBLE-TO-CLICK "NO")     */}
+      {/* “Do you love me as much as I love you?”                  */}
+      {/* YES: Celebration | NO: Playfully dodges smoothly         */}
       {/* ======================================================== */}
-      <section className="relative max-w-4xl mx-auto">
+      <section
+        id="love-question"
+        ref={questionBoxRef}
+        className="relative max-w-3xl mx-auto bg-[#FFFDF5] border-4 border-black rounded-3xl p-6 sm:p-10 shadow-[8px_8px_0px_#000000] text-center overflow-hidden"
+      >
+        {/* Adorable Second Chibi Puppy on Top-Left Corner */}
+        <div className="absolute -top-4 -left-3 rotate-[-10deg] z-20 hover:scale-110 transition-transform">
+          <SecondCuteChibiPuppy className="w-22 h-22 sm:w-26 sm:h-26 filter drop-shadow-[3px_3px_0px_#000]" />
+        </div>
+
+        {/* Super Cute Fluffy Puppy on Bottom-Right Corner */}
+        <div className="absolute -bottom-4 -right-2 rotate-[10deg] z-20 hover:scale-110 transition-transform">
+          <SuperCuteChibiPuppy className="w-22 h-22 sm:w-26 sm:h-26 filter drop-shadow-[3px_3px_0px_#000]" />
+        </div>
+
+        {/* Header Badge */}
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#FF2D87] text-white font-mono text-xs font-black uppercase rounded-full border-2 border-black shadow-[2px_2px_0px_#000] mb-3">
+          <Heart className="w-3.5 h-3.5 fill-white" />
+          <span>IMPORTANT QUESTION 💬</span>
+        </div>
+
+        {/* Question Title */}
+        <h2 className="font-serif text-2xl sm:text-4xl md:text-5xl font-black text-black tracking-tight leading-tight max-w-xl mx-auto">
+          “Do you love me as much as I love you?”
+        </h2>
+
+        {/* Reaction commentary bubble when he tries to click NO */}
+        {reactionText && (
+          <div className="inline-block mt-3 px-4 py-1.5 bg-[#FFE600] border-3 border-black rounded-2xl text-black font-sans font-black text-sm animate-bounce shadow-[3px_3px_0px_#000]">
+            {reactionText}
+          </div>
+        )}
+
+        {/* The Two Big Action Buttons */}
+        <div className="relative mt-8 sm:mt-10 min-h-[110px] sm:min-h-[130px] flex items-center justify-center gap-4 sm:gap-8">
+          {/* BUTTON 1: YES, OBVIOUSLY! (Works normally) */}
+          <button
+            type="button"
+            onClick={handleYesClick}
+            className="px-6 sm:px-10 py-4 sm:py-5 bg-[#FF2D87] hover:bg-[#E02674] text-white font-sans font-black text-base sm:text-xl uppercase tracking-wider rounded-2xl border-4 border-black shadow-[6px_6px_0px_#000000] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[4px_4px_0px_#000000] active:translate-x-[6px] active:translate-y-[6px] active:shadow-none transition-all cursor-pointer z-10"
+          >
+            YES, OBVIOUSLY! 💖
+          </button>
+
+          {/* BUTTON 2: NO (Quirky, runaway dodging button!) */}
+          <div
+            className="relative transition-transform duration-250 ease-out z-10"
+            style={{
+              transform: `translate(${noPos.x}px, ${noPos.y}px)`,
+            }}
+          >
+            <button
+              type="button"
+              onMouseEnter={dodgeNoButton}
+              onTouchStart={dodgeNoButton}
+              onClick={dodgeNoButton}
+              className="px-6 sm:px-8 py-3.5 sm:py-4 bg-[#0055FF] text-white font-sans font-black text-sm sm:text-base uppercase tracking-wider rounded-2xl border-4 border-black shadow-[5px_5px_0px_#000000] cursor-pointer hover:bg-rose-600 transition-colors"
+            >
+              NO 🏃‍♂️
+            </button>
+          </div>
+        </div>
+
+        {/* Celebratory Dialog upon clicking YES */}
+        {yesSuccess && (
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+            <div className="bg-[#FFFDF5] border-4 border-black rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-[8px_8px_0px_#000] text-center space-y-4 animate-in zoom-in-95 duration-200 relative">
+              <button
+                type="button"
+                onClick={() => setYesSuccess(false)}
+                className="absolute top-3 right-3 w-8 h-8 rounded-full bg-[#FFE600] border-2 border-black flex items-center justify-center font-black cursor-pointer hover:bg-amber-400"
+              >
+                <X className="w-5 h-5 text-black" />
+              </button>
+
+              <div className="flex items-center justify-center gap-2">
+                <SecondCuteChibiPuppy className="w-20 h-20" />
+                <SuperCuteChibiPuppy className="w-20 h-20" />
+              </div>
+
+              <div className="space-y-1">
+                <span className="px-3.5 py-1 bg-[#FFE600] border-2 border-black rounded-full font-mono text-xs font-black uppercase text-black">
+                  CORRECT ANSWER UNLOCKED!
+                </span>
+                <h3 className="font-serif text-3xl font-black text-black pt-2">
+                  I KNEW IT! 🥰
+                </h3>
+              </div>
+
+              <p className="font-handwriting text-2xl text-[#FF2D87] font-black leading-snug">
+                “Parina loves you 10,000,000x more though! You are officially stuck with me forever and ever! ♡”
+              </p>
+
+              <button
+                type="button"
+                onClick={() => setYesSuccess(false)}
+                className="w-full py-3.5 bg-[#FF2D87] hover:bg-[#E02674] text-white font-sans font-black text-sm uppercase rounded-xl border-3 border-black shadow-[4px_4px_0px_#000] cursor-pointer"
+              >
+                I AGREE FOREVER ♡
+              </button>
+            </div>
+          </div>
+        )}
+      </section>
+
+      {/* ======================================================== */}
+      {/* 5. SCRATCH CARD (VINTAGE TICKET WITH REAL SILVER COIN)   */}
+      {/* Horizontal format, draggable coin, ONE SKIP-THE-FIGHT    */}
+      {/* ======================================================== */}
+      <section id="scratch-section" className="relative pt-2">
         <ScratchCoupon />
       </section>
 
       {/* ======================================================== */}
-      {/* 4. SURPRISE WHEEL (STANDALONE GAME OBJECT)               */}
-      {/* Left: Wheel | Right: Content & Spin & Reveal            */}
+      {/* 6. SURPRISE WHEEL (STANDALONE GAME WITH 10 REWARDS)      */}
+      {/* Bold, high-contrast, crystal-clear typography             */}
       {/* ======================================================== */}
       <section id="surprise-wheel" className="relative pt-2">
         <SurpriseWheel />

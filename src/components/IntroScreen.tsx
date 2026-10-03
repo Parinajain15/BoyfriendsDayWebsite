@@ -199,43 +199,10 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
   isPlayingMusic,
   toggleMusic,
 }) => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [loadingStep, setLoadingStep] = useState(0);
-
-  const loadingMessages = [
-    'Loading your surprise memories…',
-    'Locating the famous white hoodie…',
-    'Petting every stray dog along the way…',
-    'Ordering hot chicken rolls & cold Red Bull…',
-    'Queuing up Nepali songs on the cassette…',
-    'Almost ready for you, Abhi…',
-  ];
-
-  const handleStartExperience = () => {
+  const handleOpenEnvelope = () => {
+    playPopSound();
     playSparkleSound();
-    setIsLoading(true);
-
-    confetti({
-      particleCount: 40,
-      spread: 65,
-      origin: { y: 0.65 },
-      colors: ['#FFE66D', '#9FE8C1', '#FF9FC4', '#C9B5FF', '#BFE8FF'],
-      disableForReducedMotion: true,
-    });
-
-    let step = 0;
-    const interval = setInterval(() => {
-      step++;
-      if (step < loadingMessages.length) {
-        setLoadingStep(step);
-      } else {
-        clearInterval(interval);
-        setTimeout(() => {
-          playPopSound();
-          onEnter();
-        }, 400);
-      }
-    }, 450);
+    onEnter();
   };
 
   return (
@@ -411,61 +378,28 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
 
       {/* Main Landing / Surprise Presentation (NO large white box, plenty of breathing room) */}
       <main className="relative w-full max-w-xl mx-auto z-10 flex flex-col items-center justify-center text-center px-4 py-8">
-        {!isLoading ? (
-          <div className="flex flex-col items-center justify-center space-y-3 sm:space-y-4 animate-in fade-in duration-500">
-            {/* 1. Small handwritten-style line */}
-            <p className="font-handwriting text-xl sm:text-2xl md:text-3xl text-[#536B88] font-bold tracking-wide">
-              A little something for my favourite human
-            </p>
+        <div className="flex flex-col items-center justify-center space-y-3 sm:space-y-4 animate-in fade-in duration-500">
+          {/* 1. Small handwritten-style line */}
+          <p className="font-handwriting text-xl sm:text-2xl md:text-3xl text-[#536B88] font-bold tracking-wide">
+            A little something for my favourite human
+          </p>
 
-            {/* 2. Main heading with soft contrasting lavender/pink for "Abhi" */}
-            <h1 className="font-serif text-3xl sm:text-5xl md:text-6xl font-normal text-[#1B2A4A] tracking-tight leading-tight">
-              Happy Boyfriend's Day,{' '}
-              <span className="italic font-semibold text-[#D15882] drop-shadow-2xs">
-                Abhi
-              </span>
-            </h1>
+          {/* 2. Main heading with soft contrasting lavender/pink for "Abhi" */}
+          <h1 className="font-serif text-3xl sm:text-5xl md:text-6xl font-normal text-[#1B2A4A] tracking-tight leading-tight">
+            Happy Boyfriend's Day,{' '}
+            <span className="italic font-semibold text-[#D15882] drop-shadow-2xs">
+              Abhi
+            </span>
+          </h1>
 
-            {/* 3. Subtitle */}
-            <p className="font-handwriting sm:font-serif text-lg sm:text-xl md:text-2xl text-[#4A627E] italic font-medium max-w-md pt-0.5">
-              “Because you deserve more than just a text.”
-            </p>
+          {/* 3. Subtitle */}
+          <p className="font-handwriting sm:font-serif text-lg sm:text-xl md:text-2xl text-[#4A627E] italic font-medium max-w-md pt-0.5">
+            “Because you deserve more than just a text.”
+          </p>
 
-            {/* 4. Cute hand-drawn open-envelope illustration (Click to open surprise) */}
-            <IllustratedEnvelope onClick={handleStartExperience} />
-          </div>
-        ) : (
-          /* Playful loading experience (Clean, whimsical, airy) */
-          <div className="w-full max-w-sm sm:max-w-md mx-auto p-6 sm:p-8 text-center space-y-5 animate-in fade-in zoom-in-95 duration-300">
-            <div className="w-14 h-14 mx-auto rounded-2xl bg-white/90 border border-[#BBDDF8] flex items-center justify-center shadow-xs relative">
-              <Loader2 className="w-7 h-7 text-[#20304A] animate-spin absolute" />
-              <span className="relative text-lg">✨</span>
-            </div>
-
-            <div className="space-y-1.5">
-              <h3 className="font-serif text-2xl font-bold text-[#1B2A4A]">
-                {loadingMessages[loadingStep]}
-              </h3>
-              <p className="font-handwriting text-xl text-[#536B88] font-bold">
-                Unboxing all our favorite memories...
-              </p>
-            </div>
-
-            {/* Progress indicator bar */}
-            <div className="w-full h-2.5 bg-white/70 rounded-full overflow-hidden border border-[#BFDDF5]">
-              <div
-                className="h-full bg-gradient-to-r from-[#9FE8C1] via-[#FFE66D] to-[#FF9FC4] rounded-full transition-all duration-300"
-                style={{
-                  width: `${((loadingStep + 1) / loadingMessages.length) * 100}%`,
-                }}
-              />
-            </div>
-
-            <p className="text-[11px] font-sans text-[#536B88]/80 uppercase tracking-widest font-semibold">
-              Please wait while your scrapbook unfolds...
-            </p>
-          </div>
-        )}
+          {/* 4. Cute hand-drawn open-envelope illustration (Click to open surprise immediately) */}
+          <IllustratedEnvelope onClick={handleOpenEnvelope} />
+        </div>
       </main>
     </div>
   );

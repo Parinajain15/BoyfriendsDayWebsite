@@ -246,6 +246,46 @@ export default function App() {
     return unsubscribe;
   }, []);
 
+  // Autoplay "her" track on website open with graceful user gesture fallback
+  useEffect(() => {
+    let triggered = false;
+
+    const playHerSafely = async () => {
+      if (triggered || audioEngine.getIsPlaying()) return;
+      triggered = true;
+      try {
+        await audioEngine.toggleHer();
+      } catch (err) {
+        console.debug('Autoplay waiting for user gesture', err);
+      }
+    };
+
+    playHerSafely();
+
+    const handleFirstGesture = () => {
+      if (!audioEngine.getIsPlaying()) {
+        audioEngine.toggleHer();
+      }
+      removeListeners();
+    };
+
+    const removeListeners = () => {
+      window.removeEventListener('pointerdown', handleFirstGesture);
+      window.removeEventListener('click', handleFirstGesture);
+      window.removeEventListener('touchstart', handleFirstGesture);
+      window.removeEventListener('keydown', handleFirstGesture);
+    };
+
+    window.addEventListener('pointerdown', handleFirstGesture, { passive: true, once: true });
+    window.addEventListener('click', handleFirstGesture, { passive: true, once: true });
+    window.addEventListener('touchstart', handleFirstGesture, { passive: true, once: true });
+    window.addEventListener('keydown', handleFirstGesture, { passive: true, once: true });
+
+    return () => {
+      removeListeners();
+    };
+  }, []);
+
   // Dedicated independent Toggle for Navbar "her" — JVKE
   const handleToggleHer = () => {
     audioEngine.toggleHer();
@@ -314,10 +354,10 @@ export default function App() {
     nextIconColor: string;
   }> = {
     home: {
-      container: 'bg-[#FFF8EF] bg-warm-ivory-stationery text-[#2B211E] selection:bg-[#F6D66A] selection:text-[#2B211E]',
-      footer: 'border-t border-[#E94B45]/20 bg-[#FFF8EF] text-[#2B211E]',
-      transitionBtn: 'bg-[#FFFDF7] hover:bg-[#FFF8EF] border-[#E94B45] hover:border-[#2B211E] text-[#2B211E] shadow-sm',
-      nextIconColor: 'text-[#E94B45]',
+      container: 'bg-[#FF5A1F] bg-orange-fun-canvas text-[#1A1A1A] selection:bg-[#FFE600] selection:text-black',
+      footer: 'border-t-4 border-black bg-[#FFE600] text-black',
+      transitionBtn: 'bg-[#FF2D87] hover:bg-[#E02674] border-4 border-black text-white shadow-[4px_4px_0px_#000]',
+      nextIconColor: 'text-white',
     },
     memories: {
       container: 'bg-[#CCE8FA] bg-scrapbook-canvas text-[#20304A]',

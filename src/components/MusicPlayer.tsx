@@ -186,15 +186,9 @@ export const MusicPlayer: React.FC<MusicPlayerProps> = ({
     <section id="music" className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-14 space-y-8 select-none">
       {/* Header */}
       <div className="text-center space-y-1">
-        <span className="inline-block px-3.5 py-1 bg-gradient-to-r from-pink-200 via-amber-200 via-emerald-200 via-sky-200 to-purple-200 border border-purple-300/80 rounded-full font-sans text-xs font-bold uppercase text-[#20304A] tracking-wider shadow-2xs">
-          Mixtape For Abhi 🌈
-        </span>
         <h2 className="font-serif text-3xl sm:text-4xl text-[#20304A] font-bold tracking-tight">
           THE SOUNDTRACK OF US 📼
         </h2>
-        <p className="font-handwriting text-2xl text-[#20304A]/80 font-bold">
-          "Every love song somehow became an Abhi song."
-        </p>
       </div>
 
       {/* Authentic Vintage Cassette Deck Component */}

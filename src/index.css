@@ -21,6 +21,14 @@
   background-color: #FFF8EF;
 }
 
+/* Bright Pop Orange Canvas for Home Page */
+.bg-orange-fun-canvas {
+  background-color: #FF5A1F;
+  background-image: 
+    radial-gradient(#FF7844 1.8px, transparent 1.8px);
+  background-size: 24px 24px;
+}
+
 @keyframes subtlePulse {
   0%, 100% {
     transform: scale(1);

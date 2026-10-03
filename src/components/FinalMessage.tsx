@@ -31,7 +31,7 @@ export const FinalMessage: React.FC<FinalMessageProps> = () => {
       <div className="text-center">
         <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-rose-100/90 border border-rose-300 rounded-full font-sans text-xs font-bold uppercase text-rose-800 tracking-wider shadow-2xs">
           <span className="text-rose-600">💌</span>
-          <span>A Love Letter For Abhi · From Parina</span>
+          <span>A LOVE LETTER</span>
           <span className="text-rose-600">🌹</span>
         </div>
       </div>

@@ -3,43 +3,47 @@ import confetti from 'canvas-confetti';
 import { playPopSound, playSparkleSound } from '../utils/audio';
 import { RotateCw, Sparkles, Heart } from 'lucide-react';
 
-export const WHEEL_REWARDS = [
-  'Spank Me',
-  'Tongue Wrestling',
-  'Try a New Position Next Time',
-  'Tie Me',
-  'Jacuzzi Time',
-  'Get Head',
-  'Give Me A Hickey',
-  'Risky Quickie',
-  'Strip Poker',
-  'Massage',
+export const NEXT_DATE_OPTIONS = [
+  'Visit a Waterfall or Dam',
+  'Movie Night + Cuddles',
+  'Lunch at a New Place',
+  'Clay Date',
+  'Drinking Beer by the Beach',
+  'Cigarettes After Sex',
+  'Arcade Date',
+  'Dance Together',
+  'Cook Together',
+  'You Tell Me About Politics/History',
 ] as const;
 
-export type WheelReward = (typeof WHEEL_REWARDS)[number];
+export type NextDateOption = (typeof NEXT_DATE_OPTIONS)[number];
+
+// Backwards-compatible alias
+export const WHEEL_REWARDS = NEXT_DATE_OPTIONS;
+export type WheelReward = NextDateOption;
 
 // High-energy popping palette: Bright Yellow, Hot Pink, Electric Blue, Bright Orange
 const POP_SLICE_COLORS = [
-  '#FFE600', // 1. Spank Me (Bright Yellow)
-  '#FF2D87', // 2. Tongue Wrestling (Hot Pink)
-  '#0055FF', // 3. Try a New Position Next Time (Electric Blue)
-  '#FF5500', // 4. Tie Me (Orange)
-  '#FFE600', // 5. Jacuzzi Time (Bright Yellow)
-  '#FF2D87', // 6. Get Head (Hot Pink)
-  '#0055FF', // 7. Give Me A Hickey (Electric Blue)
-  '#FF5500', // 8. Risky Quickie (Orange)
-  '#FFE600', // 9. Strip Poker (Bright Yellow)
-  '#FF2D87', // 10. Massage (Hot Pink)
+  '#FFE600', // 1. Visit a Waterfall or Dam (Bright Yellow)
+  '#FF2D87', // 2. Movie Night + Cuddles (Hot Pink)
+  '#0055FF', // 3. Lunch at a New Place (Electric Blue)
+  '#FF5500', // 4. Clay Date (Orange)
+  '#FFE600', // 5. Drinking Beer by the Beach (Bright Yellow)
+  '#FF2D87', // 6. Cigarettes After Sex (Hot Pink)
+  '#0055FF', // 7. Arcade Date (Electric Blue)
+  '#FF5500', // 8. Dance Together (Orange)
+  '#FFE600', // 9. Cook Together (Bright Yellow)
+  '#FF2D87', // 10. You Tell Me About Politics/History (Hot Pink)
 ];
 
 export const SurpriseWheel: React.FC = () => {
   const [rotation, setRotation] = useState(0);
   const [isSpinning, setIsSpinning] = useState(false);
-  const [winner, setWinner] = useState<WheelReward | null>(null);
+  const [winner, setWinner] = useState<NextDateOption | null>(null);
   const [hasSpun, setHasSpun] = useState(false);
   const totalSpinsRef = useRef(0);
 
-  const SLICE_COUNT = WHEEL_REWARDS.length; // 10
+  const SLICE_COUNT = NEXT_DATE_OPTIONS.length; // 10
   const SLICE_DEGREE = 360 / SLICE_COUNT; // 36
 
   // Coordinates helper for drawing pie slices (center 250, 250, radius 236)
@@ -75,8 +79,8 @@ export const SurpriseWheel: React.FC = () => {
     // Finish spinning after 4s
     setTimeout(() => {
       setIsSpinning(false);
-      const wonReward = WHEEL_REWARDS[targetIndex];
-      setWinner(wonReward);
+      const wonDate = NEXT_DATE_OPTIONS[targetIndex];
+      setWinner(wonDate);
       playSparkleSound();
 
       confetti({
@@ -106,7 +110,7 @@ export const SurpriseWheel: React.FC = () => {
         {/* STANDALONE WHEEL (NO GENERIC CARD, THICK OUTLINE)        */}
         {/* ======================================================== */}
         <div className="relative flex flex-col items-center justify-center shrink-0">
-          {/* TOP POINTER: Bold Chunky Arrow pointing DOWN at winning slice */}
+          {/* TOP POINTER: Bold Chunky Arrow pointing DOWN at winning date */}
           <div className="absolute -top-6 z-30 filter drop-shadow-[0_6px_10px_rgba(0,0,0,0.5)]">
             <svg width="48" height="56" viewBox="0 0 48 56" fill="none">
               <polygon
@@ -149,8 +153,8 @@ export const SurpriseWheel: React.FC = () => {
                 />
               ))}
 
-              {/* 10 Prize Slices */}
-              {WHEEL_REWARDS.map((reward, i) => {
+              {/* 10 Next Date Slices */}
+              {NEXT_DATE_OPTIONS.map((dateOption, i) => {
                 const startAngle = i * SLICE_DEGREE;
                 const endAngle = (i + 1) * SLICE_DEGREE;
                 const start = getCoordinatesForPercent(startAngle, 236);
@@ -159,7 +163,7 @@ export const SurpriseWheel: React.FC = () => {
                 const isYellowSlice = i % 4 === 0;
 
                 return (
-                  <g key={reward}>
+                  <g key={dateOption}>
                     {/* Slice Wedge */}
                     <path
                       d={`M 250 250 L ${start.x} ${start.y} A 236 236 0 0 1 ${end.x} ${end.y} Z`}
@@ -183,79 +187,105 @@ export const SurpriseWheel: React.FC = () => {
                           strokeLinejoin: 'round',
                         }}
                       >
-                        {reward === 'Spank Me' ? (
-                          <tspan x="250" y="108" fontSize="16px">
-                            SPANK ME
-                          </tspan>
-                        ) : reward === 'Tongue Wrestling' ? (
+                        {dateOption === 'Visit a Waterfall or Dam' ? (
                           <>
-                            <tspan x="250" y="98" fontSize="14px">
-                              TONGUE
+                            <tspan x="250" y="93" fontSize="12px">
+                              VISIT A
                             </tspan>
-                            <tspan x="250" y="116" fontSize="13px">
-                              WRESTLING
+                            <tspan x="250" y="108" fontSize="12.5px">
+                              WATERFALL
+                            </tspan>
+                            <tspan x="250" y="123" fontSize="12px">
+                              OR DAM
                             </tspan>
                           </>
-                        ) : reward === 'Try a New Position Next Time' ? (
+                        ) : dateOption === 'Movie Night + Cuddles' ? (
+                          <>
+                            <tspan x="250" y="99" fontSize="13px">
+                              MOVIE NIGHT
+                            </tspan>
+                            <tspan x="250" y="117" fontSize="13px">
+                              + CUDDLES
+                            </tspan>
+                          </>
+                        ) : dateOption === 'Lunch at a New Place' ? (
+                          <>
+                            <tspan x="250" y="99" fontSize="12.5px">
+                              LUNCH AT A
+                            </tspan>
+                            <tspan x="250" y="117" fontSize="13px">
+                              NEW PLACE
+                            </tspan>
+                          </>
+                        ) : dateOption === 'Clay Date' ? (
+                          <>
+                            <tspan x="250" y="99" fontSize="16px">
+                              CLAY
+                            </tspan>
+                            <tspan x="250" y="118" fontSize="16px">
+                              DATE
+                            </tspan>
+                          </>
+                        ) : dateOption === 'Drinking Beer by the Beach' ? (
                           <>
                             <tspan x="250" y="93" fontSize="11px">
-                              TRY A NEW
+                              DRINKING BEER
                             </tspan>
-                            <tspan x="250" y="107" fontSize="12px">
-                              POSITION
+                            <tspan x="250" y="108" fontSize="11.5px">
+                              BY THE
                             </tspan>
-                            <tspan x="250" y="121" fontSize="11px">
-                              NEXT TIME
-                            </tspan>
-                          </>
-                        ) : reward === 'Tie Me' ? (
-                          <tspan x="250" y="108" fontSize="17px">
-                            TIE ME
-                          </tspan>
-                        ) : reward === 'Jacuzzi Time' ? (
-                          <>
-                            <tspan x="250" y="98" fontSize="14px">
-                              JACUZZI
-                            </tspan>
-                            <tspan x="250" y="116" fontSize="14px">
-                              TIME
+                            <tspan x="250" y="123" fontSize="13px">
+                              BEACH
                             </tspan>
                           </>
-                        ) : reward === 'Get Head' ? (
-                          <tspan x="250" y="108" fontSize="16px">
-                            GET HEAD
-                          </tspan>
-                        ) : reward === 'Give Me A Hickey' ? (
+                        ) : dateOption === 'Cigarettes After Sex' ? (
                           <>
-                            <tspan x="250" y="98" fontSize="13px">
-                              GIVE ME
+                            <tspan x="250" y="99" fontSize="12px">
+                              CIGARETTES
                             </tspan>
-                            <tspan x="250" y="116" fontSize="13px">
-                              A HICKEY
+                            <tspan x="250" y="117" fontSize="13px">
+                              AFTER SEX
                             </tspan>
                           </>
-                        ) : reward === 'Risky Quickie' ? (
+                        ) : dateOption === 'Arcade Date' ? (
                           <>
-                            <tspan x="250" y="98" fontSize="14px">
-                              RISKY
+                            <tspan x="250" y="99" fontSize="15px">
+                              ARCADE
                             </tspan>
-                            <tspan x="250" y="116" fontSize="14px">
-                              QUICKIE
+                            <tspan x="250" y="118" fontSize="15px">
+                              DATE
                             </tspan>
                           </>
-                        ) : reward === 'Strip Poker' ? (
+                        ) : dateOption === 'Dance Together' ? (
                           <>
-                            <tspan x="250" y="98" fontSize="14px">
-                              STRIP
+                            <tspan x="250" y="99" fontSize="15px">
+                              DANCE
                             </tspan>
-                            <tspan x="250" y="116" fontSize="14px">
-                              POKER
+                            <tspan x="250" y="118" fontSize="14px">
+                              TOGETHER
+                            </tspan>
+                          </>
+                        ) : dateOption === 'Cook Together' ? (
+                          <>
+                            <tspan x="250" y="99" fontSize="15px">
+                              COOK
+                            </tspan>
+                            <tspan x="250" y="118" fontSize="14px">
+                              TOGETHER
                             </tspan>
                           </>
                         ) : (
-                          <tspan x="250" y="108" fontSize="16px">
-                            MASSAGE
-                          </tspan>
+                          <>
+                            <tspan x="250" y="92" fontSize="11px">
+                              YOU TELL ME
+                            </tspan>
+                            <tspan x="250" y="107" fontSize="10.5px">
+                              ABOUT POLITICS
+                            </tspan>
+                            <tspan x="250" y="122" fontSize="11px">
+                              / HISTORY
+                            </tspan>
+                          </>
                         )}
                       </text>
                     </g>
@@ -291,20 +321,16 @@ export const SurpriseWheel: React.FC = () => {
         </div>
 
         {/* ======================================================== */}
-        {/* WHEEL CONTROLS & PRIZE RESULT (BOLD POP DISPLAY)        */}
+        {/* WHEEL CONTROLS & NEXT DATE RESULT (BOLD POP DISPLAY)     */}
         {/* ======================================================== */}
         <div className="flex-1 max-w-md w-full space-y-5 text-left">
           {/* Header Title */}
           <div className="space-y-1.5">
-            <div className="inline-flex items-center gap-1.5 px-3.5 py-1 bg-[#FFE600] text-black font-mono text-xs font-black uppercase rounded-full border-3 border-black shadow-[3px_3px_0px_#000]">
-              <Sparkles className="w-3.5 h-3.5 fill-black" />
-              <span>SPIN FOR PRIZES</span>
-            </div>
             <h3 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-black text-black tracking-tight leading-none pt-1">
-              The Surprise Wheel 🎡
+              Next Date Wheel 🎡
             </h3>
             <p className="font-sans text-sm sm:text-base font-bold text-black/85 leading-snug pt-1">
-              Every slice is a real romantic reward claimable on demand with Parina. Give it a spin, boyfriend!
+              Can’t decide what we should do? Let fate decide!
             </p>
           </div>
 
@@ -321,34 +347,29 @@ export const SurpriseWheel: React.FC = () => {
               }`}
             >
               <RotateCw className={`w-6 h-6 stroke-[3] ${isSpinning ? 'animate-spin' : ''}`} />
-              <span>{isSpinning ? 'Spinning Wheel...' : hasSpun ? 'Spin Again! 🚀' : 'SPIN THE WHEEL! 🎡'}</span>
+              <span>{isSpinning ? 'Spinning Next Date...' : hasSpun ? 'SPIN FOR ANOTHER DATE! 🚀' : 'SPIN FOR OUR NEXT DATE! 🎡'}</span>
             </button>
           </div>
 
-          {/* Unlocked Prize Card */}
-          {winner && !isSpinning ? (
+          {/* Unlocked Date Card */}
+          {winner && !isSpinning && (
             <div className="bg-[#FFFDF5] border-4 border-black rounded-3xl p-5 shadow-[6px_6px_0px_#000] animate-in zoom-in-95 duration-300 relative overflow-hidden">
               <div className="absolute top-2.5 right-3 font-mono text-[10px] font-black uppercase bg-[#FF2D87] text-white px-2.5 py-0.5 rounded-full border-2 border-black">
-                CLAIMABLE NOW
+                DATE LOCKED IN 🔒
               </div>
               <span className="text-[11px] font-mono font-black text-[#FF5500] uppercase tracking-wider block mb-1">
-                🎉 THE WHEEL HAS SPOKEN:
+                🎉 OUR NEXT DATE IS:
               </span>
               <h4 className="font-serif text-2xl sm:text-3xl font-black text-black tracking-tight leading-tight">
                 {winner}
               </h4>
               <p className="font-handwriting text-xl sm:text-2xl text-[#FF2D87] font-black mt-2 leading-snug">
-                “Claimable on demand with your girlfriend. No trade-ins, no excuses! ♡”
+                “It’s official! No excuses, no changing minds — our next date is set! ♡”
               </p>
               <div className="mt-3 pt-3 border-t-2 border-black/15 flex items-center gap-2 text-xs font-bold font-sans text-black">
                 <Heart className="w-4 h-4 fill-[#FF2D87] text-[#FF2D87]" />
-                <span>Show this screen or take a screenshot to redeem!</span>
+                <span>Show this to Parina so we can schedule the date! 🗓️</span>
               </div>
-            </div>
-          ) : (
-            <div className="bg-[#FFFDF5]/90 border-3 border-black rounded-2xl p-4 shadow-[4px_4px_0px_#000] text-xs font-bold text-black/85 space-y-1">
-              <span className="font-mono text-[#FF2D87] uppercase tracking-wider block">RULEBOOK:</span>
-              <span>Tap the big yellow button or click directly on the center hub to set the wheel in motion!</span>
             </div>
           )}
         </div>

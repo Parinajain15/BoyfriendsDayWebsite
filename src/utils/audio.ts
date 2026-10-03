@@ -14,9 +14,12 @@ type PlaybackListener = (isPlaying: boolean, activeTrack: MixtapeTrack | null) =
 type TimeListener = (currentTime: number, duration: number) => void;
 type NoticeListener = (notice: string | null) => void;
 
+const HER_INITIAL_TRACK =
+  FINAL_MIXTAPE_TRACKS.find((t) => t.id === HER_TRACK_ID) || FINAL_MIXTAPE_TRACKS[2];
+
 class AudioEngine {
   private audio: HTMLAudioElement | null = null;
-  private currentTrack: MixtapeTrack | null = null;
+  private currentTrack: MixtapeTrack | null = HER_INITIAL_TRACK;
   private isPlaying = false;
   private volume = 0.8;
   private isMuted = false;
@@ -266,6 +269,17 @@ class AudioEngine {
     if (this.currentTrack?.id === HER_TRACK_ID && this.isPlaying) {
       this.pause();
       return false;
+    }
+    return this.playTrack(herTrack);
+  }
+
+  /**
+   * Unconditionally starts playing "her" (unless already actively playing).
+   */
+  public async playHer(): Promise<boolean> {
+    const herTrack = FINAL_MIXTAPE_TRACKS.find((t) => t.id === HER_TRACK_ID) || FINAL_MIXTAPE_TRACKS[2];
+    if (this.currentTrack?.id === HER_TRACK_ID && this.isPlaying) {
+      return true;
     }
     return this.playTrack(herTrack);
   }

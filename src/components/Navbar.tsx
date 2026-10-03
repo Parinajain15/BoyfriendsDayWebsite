@@ -1,5 +1,5 @@
 import React from 'react';
-import { Music, VolumeX, Settings } from 'lucide-react';
+import { Music, VolumeX } from 'lucide-react';
 import { playPopSound } from '../utils/audio';
 
 export type NavSection = 'home' | 'memories' | 'music' | 'quiz' | 'letter';
@@ -12,7 +12,7 @@ interface NavbarProps {
   onSelectSection: (section: NavSection) => void;
   isPlayingMusic: boolean;
   toggleMusic: () => void;
-  onOpenCustomize: () => void;
+  onOpenCustomize?: () => void;
   onReturnToIntro: () => void;
   boyfriendName: string;
 }
@@ -22,7 +22,6 @@ export const Navbar: React.FC<NavbarProps> = ({
   onSelectSection,
   isPlayingMusic,
   toggleMusic,
-  onOpenCustomize,
   onReturnToIntro,
 }) => {
   const sections: { id: NavSection; label: string; icon: string; color: string }[] = [
@@ -114,20 +113,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             <span className="hidden sm:inline font-sans text-xs font-semibold">
               {isPlayingMusic ? '“her” — JVKE 🎵' : 'Play “her” 🎵'}
             </span>
-          </button>
-
-          <button
-            type="button"
-            onClick={onOpenCustomize}
-            className={`px-3 py-1.5 rounded-xl text-xs font-sans font-medium flex items-center gap-1.5 shadow-2xs transition-all cursor-pointer ${
-              isDark
-                ? 'bg-[#202742] hover:bg-[#283254] text-white border border-[#34426A]'
-                : 'bg-[#20304A] hover:bg-[#152033] active:scale-95 text-white'
-            }`}
-            title="Personalize names & anniversary date"
-          >
-            <Settings className="w-3.5 h-3.5 text-amber-200" />
-            <span className="hidden sm:inline">Settings</span>
           </button>
         </div>
       </div>

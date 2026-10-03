@@ -8,7 +8,6 @@ import { MemoryPolaroids } from './components/MemoryPolaroids';
 import { MusicPlayer } from './components/MusicPlayer';
 import { GamesSection } from './components/GamesSection';
 import { FinalMessage } from './components/FinalMessage';
-import { PersonalizeModal } from './components/PersonalizeModal';
 import { Heart, ChevronRight } from 'lucide-react';
 
 const DEFAULT_SETTINGS: ScrapbookSettings = {
@@ -167,7 +166,6 @@ export default function App() {
   const [inScrapbook, setInScrapbook] = useState(false);
   const [currentSection, setCurrentSection] = useState<NavSection>('home');
   const [isHerPlaying, setIsHerPlaying] = useState(() => audioEngine.isHerPlaying());
-  const [isCustomizeOpen, setIsCustomizeOpen] = useState(false);
 
   // Settings & Content persistence
   const [settings, setSettings] = useState<ScrapbookSettings>(() => {
@@ -248,23 +246,28 @@ export default function App() {
 
   // Autoplay "her" track on website open with graceful user gesture fallback
   useEffect(() => {
-    let triggered = false;
+    let played = false;
 
-    const playHerSafely = async () => {
-      if (triggered || audioEngine.getIsPlaying()) return;
-      triggered = true;
+    const startHerAutoplay = async () => {
+      if (played || audioEngine.getIsPlaying()) return;
       try {
-        await audioEngine.toggleHer();
+        const success = await audioEngine.playHer();
+        if (success) {
+          played = true;
+          removeListeners();
+        }
       } catch (err) {
         console.debug('Autoplay waiting for user gesture', err);
       }
     };
 
-    playHerSafely();
+    // Attempt playback immediately when site opens
+    startHerAutoplay();
 
-    const handleFirstGesture = () => {
+    // If browser blocks unprompted autoplay with sound, start on first interaction
+    const handleFirstGesture = async () => {
       if (!audioEngine.getIsPlaying()) {
-        audioEngine.toggleHer();
+        await audioEngine.playHer();
       }
       removeListeners();
     };
@@ -395,7 +398,6 @@ export default function App() {
         onSelectSection={(sec) => navigateTo(sec)}
         isPlayingMusic={isHerPlaying}
         toggleMusic={handleToggleHer}
-        onOpenCustomize={() => setIsCustomizeOpen(true)}
         onReturnToIntro={() => setInScrapbook(false)}
         boyfriendName={settings.boyfriendName}
       />
@@ -486,26 +488,9 @@ export default function App() {
             >
               Envelope View 💌
             </button>
-            <span>·</span>
-            <button
-              type="button"
-              onClick={() => setIsCustomizeOpen(true)}
-              className={`underline cursor-pointer ${currentSection === 'home' ? 'hover:text-[#A9D8EA]' : 'hover:text-[#20304A]'}`}
-            >
-              Settings ⚙️
-            </button>
           </div>
         </div>
       </footer>
-
-      {/* Personalization Modal */}
-      <PersonalizeModal
-        isOpen={isCustomizeOpen}
-        onClose={() => setIsCustomizeOpen(false)}
-        settings={settings}
-        onSave={(newSettings) => setSettings(newSettings)}
-        onResetDefaults={handleResetDefaults}
-      />
     </div>
   );
 }
